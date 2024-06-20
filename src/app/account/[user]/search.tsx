@@ -14,17 +14,10 @@ export default function search({ params }:any) {
       search: '',
     },
     onSubmit: (values)=>{
-      const data = {
-        "search": values.search,
-      }
-
       // alert(JSON.stringify(data, null,2));
-
       router.push(`/account/${values.search}`);
     },
   });
-
-  console.log(JSON.stringify(router));
 
   return (
     <>
