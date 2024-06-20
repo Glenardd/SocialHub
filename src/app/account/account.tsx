@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import useSWR, { mutate } from 'swr';
 import { getCookie, removeCookie } from 'typescript-cookie';
 import StatusUpdate from './statusUpdate';
-import Search from './[user]/search';
+import Search from './user/search';
 
 export default function Accounts() {
 

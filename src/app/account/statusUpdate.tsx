@@ -140,34 +140,7 @@ export default function statusUpdate({user, userInfo}:any) {
             }
             createdTime = date.toLocaleString('default', options);
         }
-    
-        // if (edited && edited !== created) {
-        //     const editedDate = new Date(edited);
-        //     const editedDiffInSeconds = (now.getTime() - editedDate.getTime()) / 1000;
-        //     const editedDiffInMinutes = editedDiffInSeconds / 60;
-        //     const editedDiffInHours = editedDiffInMinutes / 60;
-    
-        //     let editedTime = '';
-    
-        //     if (editedDiffInSeconds < 60) {
-        //         editedTime = 'Just now';
-        //     } else if (editedDiffInMinutes < 60) {
-        //         const minutes = Math.floor(editedDiffInMinutes);
-        //         editedTime = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-        //     } else if (editedDiffInHours < 24) {
-        //         const hours = Math.floor(editedDiffInHours);
-        //         editedTime = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-        //     } else {
-        //         const isDifferentYear = editedDate.getFullYear() !== now.getFullYear();
-        //         const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric' };
-        //         if (isDifferentYear) {
-        //             options.year = 'numeric';
-        //         }
-        //         editedTime = editedDate.toLocaleString('default', options);
-        //     }
-    
-        //     return `${createdTime} (edited)`;
-        // }
+
     
         return createdTime;
     };
