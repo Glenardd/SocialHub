@@ -1,7 +1,7 @@
 'use client';
 import { useFormik } from "formik";
 import { useState } from "react";
-import useSWR, {mutate} from "swr";
+import useSWR, { mutate } from 'swr';
 
 export default function statusUpdate({user, userInfo}:any) {
 
@@ -115,7 +115,7 @@ export default function statusUpdate({user, userInfo}:any) {
 
 
     //time format
-    const formatCreatedTime = (created: string, edited?: string) => {
+    const formatCreatedTime = (created: string) => {
         const date = new Date(created);
         const now = new Date();
         const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
@@ -141,33 +141,33 @@ export default function statusUpdate({user, userInfo}:any) {
             createdTime = date.toLocaleString('default', options);
         }
     
-        if (edited && edited !== created) {
-            const editedDate = new Date(edited);
-            const editedDiffInSeconds = (now.getTime() - editedDate.getTime()) / 1000;
-            const editedDiffInMinutes = editedDiffInSeconds / 60;
-            const editedDiffInHours = editedDiffInMinutes / 60;
+        // if (edited && edited !== created) {
+        //     const editedDate = new Date(edited);
+        //     const editedDiffInSeconds = (now.getTime() - editedDate.getTime()) / 1000;
+        //     const editedDiffInMinutes = editedDiffInSeconds / 60;
+        //     const editedDiffInHours = editedDiffInMinutes / 60;
     
-            let editedTime = '';
+        //     let editedTime = '';
     
-            if (editedDiffInSeconds < 60) {
-                editedTime = 'Just now';
-            } else if (editedDiffInMinutes < 60) {
-                const minutes = Math.floor(editedDiffInMinutes);
-                editedTime = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-            } else if (editedDiffInHours < 24) {
-                const hours = Math.floor(editedDiffInHours);
-                editedTime = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-            } else {
-                const isDifferentYear = editedDate.getFullYear() !== now.getFullYear();
-                const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric' };
-                if (isDifferentYear) {
-                    options.year = 'numeric';
-                }
-                editedTime = editedDate.toLocaleString('default', options);
-            }
+        //     if (editedDiffInSeconds < 60) {
+        //         editedTime = 'Just now';
+        //     } else if (editedDiffInMinutes < 60) {
+        //         const minutes = Math.floor(editedDiffInMinutes);
+        //         editedTime = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        //     } else if (editedDiffInHours < 24) {
+        //         const hours = Math.floor(editedDiffInHours);
+        //         editedTime = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        //     } else {
+        //         const isDifferentYear = editedDate.getFullYear() !== now.getFullYear();
+        //         const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric' };
+        //         if (isDifferentYear) {
+        //             options.year = 'numeric';
+        //         }
+        //         editedTime = editedDate.toLocaleString('default', options);
+        //     }
     
-            return `${createdTime} (edited ${editedTime})`;
-        }
+        //     return `${createdTime} (edited)`;
+        // }
     
         return createdTime;
     };
@@ -211,15 +211,51 @@ export default function statusUpdate({user, userInfo}:any) {
         }
     };
 
-    const handleDislikes = () =>{
+    const handleDislikes = async (id:any) =>{
+        const userPosts = post?.filter((post: any) => post.user === userId);
 
+        const newPosts = userPosts?.map((post: any) => {
+            if (post.id === id) {
+                return {
+                    ...post,
+                    dislikes: post.dislikes + 1
+                };
+            }
+            return post;
+        });
+
+        const dislikes = {
+            "dislikes": newPosts.find((post: any) => post.id === id)?.dislikes,
+        }
+
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8090/api/collections/status_update/records/${id}`,
+                {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(dislikes),
+                }
+            );
+
+            if (response.ok) {
+                mutate(
+                    "http://127.0.0.1:8090/api/collections/status_update/records/"
+                );
+            }
+        } catch (error) {
+            console.error("Error updating likes:", error);
+        }
     };
 
     return (
        <>   
             <h2>Share your thoughts:</h2>
             <form onSubmit={statusForms.handleSubmit}>
-                <input 
+                <input
+                    placeholder="What's on your mind"
                     name="text_message"
                     type="text_message"
                     onChange={statusForms.handleChange}
@@ -240,7 +276,8 @@ export default function statusUpdate({user, userInfo}:any) {
                                         edit === userId && (
                                             <>
                                                 <form onSubmit={editForm.handleSubmit}>
-                                                    <input 
+                                                    <input
+                                                        placeholder={`${null}`}
                                                         type="text_message" 
                                                         name="text_message" 
                                                         value={editForm.values.text_message} 
@@ -254,11 +291,11 @@ export default function statusUpdate({user, userInfo}:any) {
                                     {
                                         edit !== userId && (
                                             <>  
-                                                <div>Posted {formatCreatedTime(post?.created, post?.updated)}</div>
+                                                <div>Posted {formatCreatedTime(post?.created)}</div>
                                                 <div>{post.text_message}</div>
-                                                <div>Likes: {post?.likes} Dislikes: 0</div>
+                                                <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
                                                 <button onClick={()=>handleLikes(userId)}>like</button>
-                                                <button onClick={handleDislikes}>dislike</button>
+                                                <button onClick={()=>handleDislikes(userId)}>dislike</button>
                                                 <button onClick={()=>{
                                                     handlePostEdit(userId);
                                                 }}>Edit</button>
