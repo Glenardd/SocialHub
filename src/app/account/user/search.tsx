@@ -16,7 +16,7 @@ export default function search() {
     },
     onSubmit: (values)=>{
       if(values.search === ""){
-        router.push(`/account/user?q=""`);
+        //do nothing
       }else{
         router.push(`/account/user?q=${values.search}`);
       }
@@ -29,7 +29,7 @@ export default function search() {
             <input 
               type="search"
               name="search" 
-              placeholder="search"
+              placeholder="search user"
               value={searchForm.values.search}
               onChange={searchForm.handleChange}
             />

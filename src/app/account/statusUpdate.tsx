@@ -14,6 +14,8 @@ export default function statusUpdate({user, userInfo}:any) {
     
     const post = data?.items;
 
+    const reversedOrderPost = post?.map((post: any) => post)?.reverse();
+    
     //find id of user
     const userId = userInfo?.find((acc:any)=> acc.username === user)?.id;
 
@@ -45,7 +47,11 @@ export default function statusUpdate({user, userInfo}:any) {
                 }
             }
 
-            postStatus();
+            if(values.text_message === ""){
+
+            }else{
+                postStatus();
+            };
         }
     });
 
@@ -83,8 +89,12 @@ export default function statusUpdate({user, userInfo}:any) {
                             console.log(error);
                         };
                     };
-        
-                    edit();
+                    
+                    if(values.text_message === ""){
+
+                    }else{
+                        edit();
+                    }
                 }
             });
         }
@@ -145,11 +155,11 @@ export default function statusUpdate({user, userInfo}:any) {
         return createdTime;
     };
 
-    const handleLikes = async (id: any) => {
+    const handleLikes = async (postId: any) => {
         const userPosts = post?.filter((post: any) => post.user === userId);
 
         const newPosts = userPosts?.map((post: any) => {
-            if (post.id === id) {
+            if (post.id === postId) {
                 return {
                     ...post,
                     likes: post.likes + 1
@@ -159,12 +169,12 @@ export default function statusUpdate({user, userInfo}:any) {
         });
 
         const likes = {
-            "likes": newPosts.find((post: any) => post.id === id)?.likes,
+            "likes": newPosts.find((post: any) => post.id === postId)?.likes,
         }
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8090/api/collections/status_update/records/${id}`,
+                `http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,
                 {
                     method: "PATCH",
                     headers: {
@@ -224,8 +234,7 @@ export default function statusUpdate({user, userInfo}:any) {
     };
 
     return (
-       <>   
-            <h2>Share your thoughts:</h2>
+       <>  
             <form onSubmit={statusForms.handleSubmit}>
                 <input
                     placeholder="What's on your mind"
@@ -237,7 +246,7 @@ export default function statusUpdate({user, userInfo}:any) {
                 <button type="submit">post</button>
             </form>
             <ul>
-                {post?.map((post: any) => {
+                {reversedOrderPost?.map((post: any) => {
                     if (post?.user === userId) {
 
                         const userId = post?.id;
@@ -282,7 +291,6 @@ export default function statusUpdate({user, userInfo}:any) {
                     }
                 })}
             </ul>
-
        </>
     )
 }

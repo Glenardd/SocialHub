@@ -1,6 +1,7 @@
 'use client';
 import useSWR from "swr";
 import Link from 'next/link';
+import { getCookie } from "typescript-cookie";
 
 export default function result({searchResult}:any) {
   
@@ -10,9 +11,10 @@ export default function result({searchResult}:any) {
 
   const userAccounts = data?.items;
 
+  const userLogged = getCookie('isLogged');
+
   return (
     <>
-        <div>Results:</div>
         <ul>
           {
             userAccounts?.map((acc:any)=>{
@@ -20,13 +22,18 @@ export default function result({searchResult}:any) {
               const username = acc?.username;
 
               const caseSensitiveCheck = acc?.username.toLowerCase().startsWith(searchResult?.toLowerCase());
+
+              const isUserLogged = acc?.username.toLowerCase().startsWith(userLogged?.toLowerCase());
+              
               if(caseSensitiveCheck){
-                return <li><Link href={`/account/${username}`}>{username}</Link></li>
-                
+                return (
+                  <li><Link href={ isUserLogged ? "/account" : `/account/${username}`}>{username}{isUserLogged ? '(you)': ''}</Link></li>
+                )
               }
             })
           }          
         </ul>
+        
     </>
   )
 }

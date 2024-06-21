@@ -80,6 +80,9 @@ export default function Accounts() {
             <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
             <button onClick={handleDeleteAcc}>Delete account</button>
             <button onClick={handleLogout}>Logout</button>
+            <br />
+            <br />
+            <h2>Post</h2>
             <StatusUpdate user={user} userInfo={accounts}/>
         </>
     );
