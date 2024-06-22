@@ -3,8 +3,6 @@ import { useRouter } from "next/navigation";
 import useSWR, { mutate } from 'swr';
 import { getCookie, removeCookie } from "typescript-cookie";
 import StatusUpdate from "./statusUpdate";
-import Search from "./user/search";
-import { useState } from "react";
 
 export default function Accounts() {
 
@@ -74,7 +72,6 @@ export default function Accounts() {
                 !data ? "" : (
                     <>
                         <h1>User page</h1>
-                        <Search />
                         <h2>Welcome {user}!</h2>
                         <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
                         <button onClick={handleDeleteAcc}>Delete account</button>

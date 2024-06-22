@@ -103,7 +103,6 @@ export default function result() {
 
     return (
         <>  
-            <Link href={'/account'}>Home</Link>
             <h1>{username}</h1>
             <h2>Activity: {isOnline ? 'Online': 'Offline'}</h2>
             <h2>Post</h2>
