@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(request: NextRequest, response: NextResponse) {
     const data = request.cookies.get('isLogged');
+    const passResetToken = request.cookies.get('token');
     const isLogged = data?.value;
 
     if (isLogged) {
@@ -21,5 +22,5 @@ export function middleware(request: NextRequest, response: NextResponse) {
 }
 
 export const config = {
-    matcher: ["/", "/signup", "/account", "/forgot-password", "/account/:path*"],
+    matcher: ["/", "/signup", "/account", "/forgot-password","/forgot-password/user", "/account/:path*"],
 };

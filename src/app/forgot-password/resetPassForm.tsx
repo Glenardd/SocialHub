@@ -1,13 +1,15 @@
 "use client";
-import React from "react"
+import React, { useState } from "react"
 import { useSearchParams } from "next/navigation";
 import { object, string } from "yup";
 import { useFormik } from "formik";
-import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
+import Link from "next/link";
 
 export default function resetPassForm() {
+
+    const [passChanged, setPassChanged] = useState<boolean>(false);
 
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
     
@@ -19,8 +21,8 @@ export default function resetPassForm() {
 
     const user = params.get("username");
 
-    const [passChange, setPassChange] = useState<boolean>(false);
-
+    const router = useRouter();
+    
     let passSchema = object({
         password: string().required("don't leave empty"),
     })
@@ -48,21 +50,17 @@ export default function resetPassForm() {
                 body: JSON.stringify(data),
             });
 
-            //indicates password changed
-            setPassChange(true);
-            
+            setPassChanged(true);
         }
     });
 
     return (
-        <>
-            
+        <>  
             {
-                passChange ? (
+                passChanged ? (
                     <>
                         <h2>Password changed.</h2>
-                        <Link href={"/forgot-password"}>Reset again?</Link>
-                        <Link href={"/"}>home</Link>
+                        <Link href={"/"}>signin</Link>
                     </>
                 ) : (
                     <>
@@ -82,9 +80,6 @@ export default function resetPassForm() {
                     </>
                 )
             }
-            
-            
-            
         </>
     )
 }
