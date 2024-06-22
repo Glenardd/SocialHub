@@ -4,6 +4,7 @@ import useSWR, { mutate } from 'swr';
 import { getCookie, removeCookie } from "typescript-cookie";
 import StatusUpdate from "./statusUpdate";
 import Search from "./user/search";
+import { useState } from "react";
 
 export default function Accounts() {
 
@@ -12,11 +13,6 @@ export default function Accounts() {
     const fetcher = (url: string, options: RequestInit = {}) => fetch(url, options).then((res) => res.json());
 
     const { data } = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false });
-
-    if (!data) {
-        console.log("loading");
-        return <div>Loading...</div>;
-    };
 
     const accounts = data?.items;
     const user = getCookie("isLogged") === null ? null: getCookie("isLogged");
@@ -74,16 +70,22 @@ export default function Accounts() {
 
     return (
         <>
-            <h1>User page</h1>
-            <Search />
-            <h2>Welcome {user}!</h2>
-            <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
-            <button onClick={handleDeleteAcc}>Delete account</button>
-            <button onClick={handleLogout}>Logout</button>
-            <br />
-            <br />
-            <h2>Post</h2>
-            <StatusUpdate user={user} userInfo={accounts}/>
+            {   
+                !data ? "" : (
+                    <>
+                        <h1>User page</h1>
+                        <Search />
+                        <h2>Welcome {user}!</h2>
+                        <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
+                        <button onClick={handleDeleteAcc}>Delete account</button>
+                        <button onClick={handleLogout}>Logout</button>
+                        <br />
+                        <br />
+                        <h2>Post</h2>
+                        <StatusUpdate user={user} userInfo={accounts}/>
+                    </>
+                )
+            }
         </>
     );
 }

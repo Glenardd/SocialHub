@@ -3,7 +3,6 @@ import React, { useState } from "react"
 import { useSearchParams } from "next/navigation";
 import { object, string } from "yup";
 import { useFormik } from "formik";
-import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import Link from "next/link";
 
@@ -20,8 +19,6 @@ export default function resetPassForm() {
     const params = useSearchParams();
 
     const user = params.get("username");
-
-    const router = useRouter();
     
     let passSchema = object({
         password: string().required("don't leave empty"),
