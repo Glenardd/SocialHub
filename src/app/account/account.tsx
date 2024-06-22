@@ -16,7 +16,7 @@ export default function Accounts() {
     if (!data) {
         console.log('loading');
         return <div>Loading...</div>;
-    }
+    };
 
     const accounts = data?.items;
     const user = getCookie('isLogged') === null ? null: getCookie('isLogged');
@@ -43,7 +43,7 @@ export default function Accounts() {
                 removeCookie('isLogged');
             }
         }
-        router.push('/signin');
+        router.push('/');
     };
 
     const handleDeleteAcc = async () => {

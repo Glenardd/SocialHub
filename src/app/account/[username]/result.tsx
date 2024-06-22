@@ -96,7 +96,6 @@ export default function result() {
                 );
             };
             
-            
         }catch(error){
             console.log(error);
         }
