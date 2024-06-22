@@ -25,17 +25,17 @@ export default function search() {
 
   return (
     <>
-        <form onSubmit={searchForm.handleSubmit}>
-            <input 
-              type="search"
-              name="search" 
-              placeholder="search user"
-              value={searchForm.values.search}
-              onChange={searchForm.handleChange}
-            />
-            <button type="submit">search</button>
-        </form>
-        <Result searchResult={query}/>
+      <form onSubmit={searchForm.handleSubmit}>
+          <input 
+            type="search"
+            name="search" 
+            placeholder="search user"
+            value={searchForm.values.search}
+            onChange={searchForm.handleChange}
+          />
+          <button type="submit">search</button>
+      </form>
+      <Result searchResult={query}/>
     </>
   )
 }

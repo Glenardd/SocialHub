@@ -1,9 +1,9 @@
 "use client";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import useSWR, { mutate } from 'swr';
-import { getCookie, removeCookie } from 'typescript-cookie';
-import StatusUpdate from './statusUpdate';
-import Search from './user/search';
+import { getCookie, removeCookie } from "typescript-cookie";
+import StatusUpdate from "./statusUpdate";
+import Search from "./user/search";
 
 export default function Accounts() {
 
@@ -11,15 +11,15 @@ export default function Accounts() {
 
     const fetcher = (url: string, options: RequestInit = {}) => fetch(url, options).then((res) => res.json());
 
-    const { data } = useSWR('http://127.0.0.1:8090/api/collections/accounts/records', fetcher, { revalidateOnFocus: false });
+    const { data } = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false });
 
     if (!data) {
-        console.log('loading');
+        console.log("loading");
         return <div>Loading...</div>;
     };
 
     const accounts = data?.items;
-    const user = getCookie('isLogged') === null ? null: getCookie('isLogged');
+    const user = getCookie("isLogged") === null ? null: getCookie("isLogged");
 
     const handleLogout = async () => {
         for (const account of accounts) {
@@ -40,10 +40,10 @@ export default function Accounts() {
                 };
 
                 await updateActivity();
-                removeCookie('isLogged');
+                removeCookie("isLogged");
             }
         }
-        router.push('/');
+        router.push("/");
     };
 
     const handleDeleteAcc = async () => {
@@ -53,9 +53,9 @@ export default function Accounts() {
 
                 const updateDelete = async () => {
                     const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${accountId}`, {
-                        method: 'DELETE',
+                        method: "DELETE",
                         headers: {
-                            'Content-Type': 'application/json',
+                            "Content-Type": "application/json",
                         },
                     });
                     if (response.ok) {
