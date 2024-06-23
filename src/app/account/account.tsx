@@ -1,10 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
 import useSWR, { mutate } from 'swr';
-import { getCookie, removeCookie } from "typescript-cookie";
+import { removeCookie } from "typescript-cookie";
 import StatusUpdate from "./statusUpdate";
+import Link from "next/link";
 
-export default function Accounts() {
+export default function Accounts({user}:any) {
 
     const router = useRouter();
 
@@ -12,8 +13,7 @@ export default function Accounts() {
 
     const { data } = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false });
 
-    const accounts = data?.items;
-    const user = getCookie("isLogged") === null ? null: getCookie("isLogged");
+    const accounts = data?.items || [];
 
     const handleLogout = async () => {
         for (const account of accounts) {
@@ -66,6 +66,8 @@ export default function Accounts() {
 
     const isOnline = accounts?.find((acc:any) => acc?.username === user)?.isOnline;
 
+    const friends = accounts?.find((acc:any) => acc?.username === user)?.friends;
+
     return (
         <>
             {   
@@ -74,6 +76,9 @@ export default function Accounts() {
                         <h1>User page</h1>
                         <h2>Welcome {user}!</h2>
                         <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
+                        <h2>
+                            <Link href={'/account/friends'}>{friends.length} friends</Link>
+                        </h2>
                         <button onClick={handleDeleteAcc}>Delete account</button>
                         <button onClick={handleLogout}>Logout</button>
                         <br />
