@@ -21,6 +21,7 @@ export default function postDisplay() {
         const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
         const diffInMinutes = diffInSeconds / 60;
         const diffInHours = diffInMinutes / 60;
+        const diffInDays = diffInHours / 24;
     
         let createdTime = '';
     
@@ -32,6 +33,9 @@ export default function postDisplay() {
         } else if (diffInHours < 24) {
             const hours = Math.floor(diffInHours);
             createdTime = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else if (diffInDays < 7) {
+            const days = Math.floor(diffInDays);
+            createdTime = `${days} day${days !== 1 ? 's' : ''} ago`;
         } else {
             const isDifferentYear = date.getFullYear() !== now.getFullYear();
             const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric' };
@@ -40,9 +44,10 @@ export default function postDisplay() {
             }
             createdTime = date.toLocaleString('default', options);
         }
-
+    
         return createdTime;
     };
+    
 
     const handleLikes = async (id:any) =>{
         const newPosts = post?.map((post:any)=>{

@@ -1,12 +1,11 @@
 import UserNav from "../../userNav";
+import FriendsList from "./friendsList";
 
 export default function pages() {
   return (
     <>
       <UserNav />
-      <h2>
-        friends
-      </h2>
+      <FriendsList />
     </>
   )
 }
