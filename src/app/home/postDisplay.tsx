@@ -47,7 +47,6 @@ export default function postDisplay() {
     
         return createdTime;
     };
-    
 
     const handleLikes = async (id:any) =>{
         const newPosts = post?.map((post:any)=>{
@@ -114,7 +113,7 @@ export default function postDisplay() {
                 {
                     post?.map((post:any)=>{
                         return (
-                            <li>
+                            <li key={post?.id}>
                                 <div>User: {user?.find((user:any)=> user?.id === post?.user)?.username}</div>
                                 <div>{formatCreatedTime(post?.created)}</div>
                                 <div>{post?.text_message}</div>

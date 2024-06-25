@@ -23,6 +23,39 @@ export default function result() {
 
     const userId = user?.find((acc:any)=> acc?.username === username)?.id;
 
+    const formatCreatedTime = (created: string) => {
+        const date = new Date(created);
+        const now = new Date();
+        const diffInSeconds = (now.getTime() - date.getTime()) / 1000;
+        const diffInMinutes = diffInSeconds / 60;
+        const diffInHours = diffInMinutes / 60;
+        const diffInDays = diffInHours / 24;
+    
+        let createdTime = '';
+    
+        if (diffInSeconds < 60) {
+            createdTime = 'Just now';
+        } else if (diffInMinutes < 60) {
+            const minutes = Math.floor(diffInMinutes);
+            createdTime = `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        } else if (diffInHours < 24) {
+            const hours = Math.floor(diffInHours);
+            createdTime = `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else if (diffInDays < 7) {
+            const days = Math.floor(diffInDays);
+            createdTime = `${days} day${days !== 1 ? 's' : ''} ago`;
+        } else {
+            const isDifferentYear = date.getFullYear() !== now.getFullYear();
+            const options: Intl.DateTimeFormatOptions = { month: 'long', day: 'numeric' };
+            if (isDifferentYear) {
+                options.year = 'numeric';
+            }
+            createdTime = date.toLocaleString('default', options);
+        }
+    
+        return createdTime;
+    };
+
     const handleLikes = async (postId: any) =>{
 
         const userPosts = post?.filter((post:any)=> post?.user === userId);
@@ -101,11 +134,14 @@ export default function result() {
         }
     }
 
+    const userFriends = user?.find((user:any)=> user?.username === username).friends;
+    
     return (
         <>  
             <h1>{username}</h1>
             <h2>Activity: {isOnline ? 'Online': 'Offline'}</h2>
             <h2>Post</h2>
+            <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
             <ul>
                 {
                     reversedOrderPost?.map((post:any)=>{
@@ -115,7 +151,8 @@ export default function result() {
 
                             return (
                                 <li>
-                                    {post?.text_message}
+                                    <div>{formatCreatedTime(post?.created)}</div>
+                                    <div>{post?.text_message}</div>
                                     <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
                                     <button onClick={()=> handleLikes(postId)}>like</button>
                                     <button onClick={()=> handleDislikes(postId)}>dislike</button>

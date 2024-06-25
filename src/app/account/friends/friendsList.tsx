@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { getCookie } from "typescript-cookie";
 import useSWR from "swr";
+import Link from "next/link";
 
 export default function friendsList() {
 
@@ -34,8 +35,13 @@ export default function friendsList() {
             <ul>
                 {
                     foundFriends?.map((friends:any,)=>{
+
+                        const friendUsername = friends?.username;
+
                         return (
-                            <li key={friends?.id}>{friends?.username}</li>
+                            <li key={friends?.id}>
+                                <Link href={`/account/${friendUsername}`}>{friends?.username}</Link>
+                            </li>
                         )
                     })
                 }
