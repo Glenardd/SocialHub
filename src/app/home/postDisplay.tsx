@@ -1,5 +1,8 @@
 "use client";
 import useSWR, { mutate } from "swr";
+import Link from "next/link";
+import { getCookie } from "typescript-cookie";
+import { useEffect, useState } from "react";
 
 export default function postDisplay() {
 
@@ -14,6 +17,13 @@ export default function postDisplay() {
 
     const post = allPost?.map((post: any) => post)?.reverse();
     const user = allUser?.map((user: any) => user)?.reverse();
+
+    const [userLogged, setUserLogged] = useState<string | null>(null);
+
+    useEffect(()=>{
+        const userCookie = getCookie("isLogged") || null;
+        setUserLogged(userCookie);
+    },[]);
 
     const formatCreatedTime = (created: string) => {
         const date = new Date(created);
@@ -112,9 +122,12 @@ export default function postDisplay() {
             <ul>
                 {
                     post?.map((post:any)=>{
+
+                        const accounts = user?.find((user:any)=> user?.id === post?.user)?.username;
+
                         return (
                             <li key={post?.id}>
-                                <div>User: {user?.find((user:any)=> user?.id === post?.user)?.username}</div>
+                                <div>User: <Link href={accounts === userLogged ? "/account" :`/account/${accounts}`}>{accounts}</Link></div>
                                 <div>{formatCreatedTime(post?.created)}</div>
                                 <div>{post?.text_message}</div>
                                 <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
