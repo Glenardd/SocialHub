@@ -1,11 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import useSWR, { mutate } from 'swr';
-import { removeCookie } from "typescript-cookie";
+import { removeCookie, getCookie } from "typescript-cookie";
 import StatusUpdate from "./statusUpdate";
 import Link from "next/link";
 
-export default function Accounts({user}:any) {
+export default function Accounts() {
+
+    const user = getCookie("isLogged");
 
     const router = useRouter();
 
@@ -35,9 +37,9 @@ export default function Accounts({user}:any) {
 
                 await updateActivity();
                 removeCookie("isLogged");
+                router.push("/");
             }
         }
-        router.push("/");
     };
 
     const handleDeleteAcc = async () => {
@@ -67,6 +69,7 @@ export default function Accounts({user}:any) {
     const isOnline = accounts?.find((acc:any) => acc?.username === user)?.isOnline;
 
     const friends = accounts?.find((acc:any) => acc?.username === user)?.friends;
+    const friendRequests = accounts?.find((acc:any) => acc?.username === user)?.friend_requests;
 
     return (
         <>
@@ -76,9 +79,8 @@ export default function Accounts({user}:any) {
                         <h1>User page</h1>
                         <h2>Welcome {user}!</h2>
                         <h2>Acitivity: {isOnline ? 'online': 'offline'}</h2>
-                        <h2>
-                            <Link href={'/account/friends'}>{friends.length} friends</Link>
-                        </h2>
+                        <h2><Link href={"/account/friends"}>{friends.length} friends</Link></h2>
+                        <h2><Link href={"/account/friend-requests"}>{friendRequests?.length} friend requests</Link></h2>
                         <button onClick={handleDeleteAcc}>Delete account</button>
                         <button onClick={handleLogout}>Logout</button>
                         <br />

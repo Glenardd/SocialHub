@@ -2,6 +2,8 @@
 import { useParams } from "next/navigation";
 import useSWR, { mutate } from "swr";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getCookie } from "typescript-cookie";
 
 export default function result() {
     
@@ -22,6 +24,13 @@ export default function result() {
     const isOnline = user?.find((acc:any)=> acc?.username === username)?.isOnline;
 
     const userId = user?.find((acc:any)=> acc?.username === username)?.id;
+
+    const [loggedUser, setLoggedUser] = useState<string | null>(null);
+
+    useEffect(()=>{
+        const userLogged = getCookie("isLogged") || null;
+        setLoggedUser(userLogged);
+    },[])
 
     const formatCreatedTime = (created: string) => {
         const date = new Date(created);
@@ -134,12 +143,48 @@ export default function result() {
         }
     }
 
-    const userFriends = user?.find((user:any)=> user?.username === username).friends;
+    const handleAddFriend = async (userId:any) =>{
+
+        //current logged user
+        const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser).id;
+
+        //get the data of the added account
+        const addedUser = user?.find((acc: any)=> acc?.id === userId);
+
+        //get the friend request property
+        const addedUserFriendRequest = addedUser?.friend_requests;
+
+        //appened the loggedin account
+        const updateAddedUser = [...addedUserFriendRequest, currentLoggedUserID];
+        
+        const friendRequest = {
+            "friend_requests": updateAddedUser,
+        }
+
+        try{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userId}`,{
+                method: "PATCH",
+                headers:{
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(friendRequest),
+            });
+
+            if(response.ok){
+                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+            }
+        }catch(error){
+            console.log(error);
+        }
+    };
+
+    const userFriends = user?.find((user:any)=> user?.username === username)?.friends;
     
     return (
         <>  
             <h1>{username}</h1>
             <h2>Activity: {isOnline ? 'Online': 'Offline'}</h2>
+            <button onClick={()=> handleAddFriend(userId)}>Add friend</button>
             <h2>Post</h2>
             <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
             <ul>
@@ -165,5 +210,5 @@ export default function result() {
 
         </>
         
-    )
+    );
 }
