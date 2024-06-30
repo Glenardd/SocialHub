@@ -156,7 +156,7 @@ export default function result() {
 
         //appened the loggedin account
         const updateAddedUser = [...addedUserFriendRequest, currentLoggedUserID];
-        
+
         const friendRequest = {
             "friend_requests": updateAddedUser,
         }
@@ -178,13 +178,60 @@ export default function result() {
         }
     };
 
+    const handleUnfriend = async (userId:any) => {
+        //current logged user
+        const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser).id;
+
+        //get the data of the added account
+        const addedUser = user?.find((acc: any)=> acc?.id === userId);
+
+        //get the friend request property
+        const addedUserFriendRequest = addedUser?.friend_requests;
+
+        //appened the loggedin account
+        const updateAddedUser = addedUserFriendRequest.filter((friendId:any) => friendId !== currentLoggedUserID);
+
+        const unfriend = {
+            "friend_requests": updateAddedUser,
+        }
+
+        try{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userId}`,{
+                method: "PATCH",
+                headers:{
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(unfriend),
+            });
+
+            if(response.ok){
+                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+            }
+        }catch(error){
+            console.log(error);
+        }
+    }
+    
+    //find the friend_requests of the visited account
+    const isFriendRequest = user?.find((acc:any)=> acc?.username === username)?.friend_requests;
+    
+    //find its username if its available in the visited account
+    const isLoggedUserFound = isFriendRequest?.map((id:any)=> {
+        return user?.find((acc:any)=> acc?.id === id)?.username;
+    });
+
+    //check if account currently logged is equal to the friend_request
+    const isLogged= isLoggedUserFound?.some((isLogged:any)=> isLogged === loggedUser);
+    
     const userFriends = user?.find((user:any)=> user?.username === username)?.friends;
     
     return (
         <>  
             <h1>{username}</h1>
             <h2>Activity: {isOnline ? 'Online': 'Offline'}</h2>
-            <button onClick={()=> handleAddFriend(userId)}>Add friend</button>
+            {
+                !isLogged ?  <button onClick={()=> handleAddFriend(userId)}>Add friend</button> :<button onClick={()=> handleUnfriend(userId)}>cancel request</button>
+            }
             <h2>Post</h2>
             <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
             <ul>
