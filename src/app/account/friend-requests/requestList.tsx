@@ -23,11 +23,42 @@ export default function pages() {
 
     const loggedUser = user?.find((acc:any)=> acc?.username === userLogged);
 
-    const friendRequests = loggedUser?.friend_requests;
+    const friendRequests = loggedUser?.friend_requests; 
 
     const foundRequests = friendRequests?.map((id:any)=>{
         return user?.find((acc:any)=> acc?.id === id)?.username;
     })
+    
+    const handleConfirm = async (username: any) =>{
+
+        const userLogegdId = loggedUser?.id;
+        const userLoggedFriends =  loggedUser?.friends;
+
+        const userfind = user?.find((acc:any)=> acc?.username === username)?.id; 
+
+        const updateFriends = [...userLoggedFriends, userfind];
+
+        const friends ={
+            "friends": updateFriends,
+        };
+
+        try{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLogegdId}`,{
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(friends),
+            });
+
+            if(response.ok){
+                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+            }
+        }catch(error){
+            console.log(error);
+        }
+    
+    };
     
     return (
         <>
@@ -36,7 +67,11 @@ export default function pages() {
         {
             foundRequests?.map((username:any, id:number)=>{
                 return(
-                    <li key={id}><Link href={`/account/${username}`}>{username}</Link></li>
+                    <li key={id}>
+                        <Link href={`/account/${username}`}>{username}</Link>
+                        <button onClick={()=>handleConfirm(username)}>Confirm</button>
+                        <button >Delete</button>
+                    </li>
                 )
             }).reverse()
         }

@@ -159,7 +159,7 @@ export default function result() {
 
         const friendRequest = {
             "friend_requests": updateAddedUser,
-        }
+        };
 
         try{
             const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userId}`,{
