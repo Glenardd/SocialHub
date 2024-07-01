@@ -30,11 +30,17 @@ export default function result() {
     //current logged user
     const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser)?.id;
 
+    //friends of the logged user
+    const currentLoggedUserFriends = user?.find((acc: any)=> acc?.username === loggedUser)?.friends;
+
     //get the data of the added account
     const addedUser = user?.find((acc: any)=> acc?.id === userId);
 
     //get the friend request property
     const addedUserFriendRequest = addedUser?.friend_requests;
+
+    //get the friends of the added account
+    const addedUserFriends = addedUser?.friends;
 
     useEffect(()=>{
         const userLogged = getCookie("isLogged") || null;
@@ -203,9 +209,40 @@ export default function result() {
         }
     };
 
-    const handleUnfriend = (userId:any) =>{
-        alert(userId);
-    }
+    const handleUnfriend = async (userId:any) =>{
+        const removeAccount = currentLoggedUserFriends?.filter((id:any)=> id!== userId);
+
+        const unfriend = {
+            "friends": removeAccount,
+        };
+
+        const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${currentLoggedUserID}`,{
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body:JSON.stringify(unfriend),
+        });
+
+        if(response.ok){
+            const checkIfFriends = currentLoggedUserFriends?.filter((id:any)=> id !== userId )
+
+            const checkFriendsData = {
+                "friends": checkIfFriends,
+            };
+            const unfriendAcc = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userId}`,{
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body:JSON.stringify(checkFriendsData),
+            });
+
+            if(unfriendAcc.ok){
+                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+            };
+       };
+    };
     
     //find the friend_requests of the visited account
     const isFriendRequest = user?.find((acc:any)=> acc?.username === username)?.friend_requests;
@@ -222,7 +259,7 @@ export default function result() {
     const isLoggedInRequest= isLoggedUserFound?.some((isLogged:any)=> isLogged === loggedUser);
     
     const userFriends = user?.find((user:any)=> user?.username === username)?.friends;
-    
+
     return (
         <>  
             <h1>{username}</h1>
@@ -239,9 +276,9 @@ export default function result() {
             }
             {
                 // Show the unfriend button if the user is a friend
-                isFriend && (
+                isFriend ? (
                 <button onClick={()=> handleUnfriend(userId)}>Unfriend</button>
-                )
+                ) : ""
             }
             <h2>Post</h2>
             <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
