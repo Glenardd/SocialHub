@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { getCookie } from "typescript-cookie";
 
 export default function pages() {
-
+    
     const [userLogged, setUserLogged] = useState<string | null>(null);
 
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
@@ -21,18 +21,23 @@ export default function pages() {
         setUserLogged(user);
     },[]);
 
+    //get the data of logged current user
     const loggedUser = user?.find((acc:any)=> acc?.username === userLogged);
 
+    //get the id of the current user
+    const userLogegdId = loggedUser?.id;
+
+    //get the friend requests of the current user
     const friendRequests = loggedUser?.friend_requests; 
+
+    // get the friends of the current user
+    const userLoggedFriends =  loggedUser?.friends;
 
     const foundRequests = friendRequests?.map((id:any)=>{
         return user?.find((acc:any)=> acc?.id === id)?.username;
     })
     
     const handleConfirm = async (username: any) =>{
-
-        const userLogegdId = loggedUser?.id;
-        const userLoggedFriends =  loggedUser?.friends; 
 
         const userfind = user?.find((acc:any)=> acc?.username === username)?.id; 
 
@@ -80,6 +85,34 @@ export default function pages() {
         };
     
     };
+
+    const handleDelete = async (username:any) =>{
+        
+        const userfind = user?.find((acc:any)=> acc?.username === username)?.id;
+
+        const removeAccountRequest = friendRequests?.filter((user:any)=> user !== userfind); 
+
+        const removeRequest = {
+            "friend_requests": removeAccountRequest,
+        };
+        
+        try{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLogegdId}`,{
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(removeRequest),
+            });
+            
+            if(response.ok){
+                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+            };
+
+        }catch(error){
+            console.log(error);
+        };
+    };
     
     return (
         <>
@@ -91,7 +124,7 @@ export default function pages() {
                     <li key={id}>
                         <Link href={`/account/${username}`}>{username}</Link>
                         <button onClick={()=>handleConfirm(username)}>Confirm</button>
-                        <button >Delete</button>
+                        <button onClick={()=>handleDelete(username)}>Delete</button>
                     </li>
                 )
             }).reverse()
