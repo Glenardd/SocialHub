@@ -27,6 +27,15 @@ export default function result() {
 
     const [loggedUser, setLoggedUser] = useState<string | null>(null);
 
+    //current logged user
+    const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser)?.id;
+
+    //get the data of the added account
+    const addedUser = user?.find((acc: any)=> acc?.id === userId);
+
+    //get the friend request property
+    const addedUserFriendRequest = addedUser?.friend_requests;
+
     useEffect(()=>{
         const userLogged = getCookie("isLogged") || null;
         setLoggedUser(userLogged);
@@ -145,15 +154,6 @@ export default function result() {
 
     const handleAddFriend = async (userId:any) =>{
 
-        //current logged user
-        const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser).id;
-
-        //get the data of the added account
-        const addedUser = user?.find((acc: any)=> acc?.id === userId);
-
-        //get the friend request property
-        const addedUserFriendRequest = addedUser?.friend_requests;
-
         //appened the loggedin account
         const updateAddedUser = [...addedUserFriendRequest, currentLoggedUserID];
 
@@ -178,16 +178,7 @@ export default function result() {
         }
     };
 
-    const handleUnfriend = async (userId:any) => {
-        //current logged user
-        const currentLoggedUserID = user?.find((acc: any)=> acc?.username === loggedUser).id;
-
-        //get the data of the added account
-        const addedUser = user?.find((acc: any)=> acc?.id === userId);
-
-        //get the friend request property
-        const addedUserFriendRequest = addedUser?.friend_requests;
-
+    const handleCancelFriend = async (userId:any) => {
         //appened the loggedin account
         const updateAddedUser = addedUserFriendRequest.filter((friendId:any) => friendId !== currentLoggedUserID);
 
@@ -210,10 +201,17 @@ export default function result() {
         }catch(error){
             console.log(error);
         }
+    };
+
+    const handleUnfriend = (userId:any) =>{
+        alert(userId);
     }
     
     //find the friend_requests of the visited account
     const isFriendRequest = user?.find((acc:any)=> acc?.username === username)?.friend_requests;
+
+    //find if the logged user are friends
+    const isFriend = user?.find((acc:any)=> acc?.username === username)?.friends?.some((id:any)=> id === currentLoggedUserID);
     
     //find its username if its available in the visited account
     const isLoggedUserFound = isFriendRequest?.map((id:any)=> {
@@ -221,7 +219,7 @@ export default function result() {
     });
 
     //check if account currently logged is equal to the friend_request
-    const isLogged= isLoggedUserFound?.some((isLogged:any)=> isLogged === loggedUser);
+    const isLoggedInRequest= isLoggedUserFound?.some((isLogged:any)=> isLogged === loggedUser);
     
     const userFriends = user?.find((user:any)=> user?.username === username)?.friends;
     
@@ -230,7 +228,20 @@ export default function result() {
             <h1>{username}</h1>
             <h2>Activity: {isOnline ? 'Online': 'Offline'}</h2>
             {
-                !isLogged ?  <button onClick={()=> handleAddFriend(userId)}>Add friend</button> :<button onClick={()=> handleUnfriend(userId)}>cancel request</button>
+                // If the user is not a friend, show the appropriate button based on isLogged
+                !isFriend && (
+                    !isLoggedInRequest ? (
+                        <button onClick={() => handleAddFriend(userId)}>Add friend</button>
+                    ) : (
+                        <button onClick={() => handleCancelFriend(userId)}>Cancel request</button>
+                    )
+                )
+            }
+            {
+                // Show the unfriend button if the user is a friend
+                isFriend && (
+                <button onClick={()=> handleUnfriend(userId)}>Unfriend</button>
+                )
             }
             <h2>Post</h2>
             <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
