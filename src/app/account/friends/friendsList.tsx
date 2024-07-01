@@ -29,6 +29,10 @@ export default function friendsList() {
         user?.find((user: any) => user.id === friendId)
     );
 
+    const handleUnfriend = (userId:any) =>{
+        console.log(userId);
+    }
+
     return (
         <>
             <h1>Friends</h1>
@@ -41,6 +45,7 @@ export default function friendsList() {
                         return (
                             <li key={friends?.id}>
                                 <Link href={`/account/${friendUsername}`}>{friends?.username}</Link>
+                                <button onClick={()=> handleUnfriend(friends?.id)}>Unfriend</button>
                             </li>
                         )
                     })
