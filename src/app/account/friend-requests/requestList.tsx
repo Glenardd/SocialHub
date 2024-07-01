@@ -25,7 +25,7 @@ export default function pages() {
     const loggedUser = user?.find((acc:any)=> acc?.username === userLogged);
 
     //get the id of the current user
-    const userLogegdId = loggedUser?.id;
+    const userLoggedId = loggedUser?.id;
 
     //get the friend requests of the current user
     const friendRequests = loggedUser?.friend_requests; 
@@ -48,7 +48,7 @@ export default function pages() {
         };
 
         try{
-            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLogegdId}`,{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLoggedId}`,{
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -60,21 +60,46 @@ export default function pages() {
                 
                 const removeAccount = friendRequests?.filter((user:any)=> user !== userfind);
 
-                const  removeRequest ={
-                    "friend_requests": removeAccount, 
+                const otherUser = user?.find((acc:any)=> acc?.id === userfind);
+
+                const otherUserFriends = otherUser?.friends;
+
+                const updatedUsersFriends = [...otherUserFriends, userLoggedId];
+
+                const  addTofriendData ={
+                    "friends": updatedUsersFriends, 
                 };
 
                 try{
-                    const removeAccountConfirm = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLogegdId}`,{
+                    const addToFriendConfirm = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userfind}`,{
                         method: "PATCH",
                         headers: {
                             "Content-Type": "application/json",
                         },
-                        body: JSON.stringify(removeRequest),
+                        body: JSON.stringify(addTofriendData),
                     });
     
-                    if(removeAccountConfirm.ok){
-                        mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+                    if(addToFriendConfirm.ok){
+
+                        const removeAccountData = {
+                            "friend_requests": removeAccount, 
+                        };
+                        
+                        try{
+                            const removeRequest = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLoggedId}`,{
+                                method: "PATCH",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(removeAccountData),
+                            });
+
+                            if(removeRequest.ok){
+                                mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+                            };
+                        }catch(error){
+
+                        };
                     };
                 }catch(error){
                     console.log(error)
@@ -97,7 +122,7 @@ export default function pages() {
         };
         
         try{
-            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLogegdId}`,{
+            const response = await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${userLoggedId}`,{
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
