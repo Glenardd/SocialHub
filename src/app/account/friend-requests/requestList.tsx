@@ -17,7 +17,7 @@ export default function pages() {
     const user = userData?.map((acc:any)=>acc).reverse();
 
     useEffect(()=>{
-        const user  = getCookie('isLogged') || null;
+        const user  = getCookie("isLogged") || null;
         setUserLogged(user);
     },[]);
 
@@ -58,12 +58,17 @@ export default function pages() {
 
             if(response.ok){
                 
+                //filter the unfriended account
                 const removeAccount = friendRequests?.filter((user:any)=> user !== userfind);
-
+                
+                //find the removed user account
                 const otherUser = user?.find((acc:any)=> acc?.id === userfind);
 
+                //get the other user friends
                 const otherUserFriends = otherUser?.friends;
 
+                //appened the currentt user loggedin in the other user friends list
+                // both can now be friends
                 const updatedUsersFriends = [...otherUserFriends, userLoggedId];
 
                 const  addTofriendData ={
@@ -81,6 +86,7 @@ export default function pages() {
     
                     if(addToFriendConfirm.ok){
 
+                        //removed accounts in the friend requests after comfirming as friends
                         const removeAccountData = {
                             "friend_requests": removeAccount, 
                         };
