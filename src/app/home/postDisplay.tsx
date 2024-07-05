@@ -127,8 +127,8 @@ export default function postDisplay() {
 
                         return (
                             <li key={post?.id}>
-                                <div>User: <Link href={accounts === userLogged ? "/account" :`/account/${accounts}`}>{accounts}</Link></div>
-                                <div>{formatCreatedTime(post?.created)}</div>
+                                <div><Link href={accounts === userLogged ? "/account" :`/account/${accounts}`}>{accounts}</Link></div>
+                                <div>Posted: {formatCreatedTime(post?.created)}</div>
                                 <div>{post?.text_message}</div>
                                 <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
                                 <button onClick={()=>handleLikes(post?.id)}>Like</button>
