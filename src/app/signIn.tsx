@@ -22,7 +22,6 @@ export default function Forms(){
             password: '',
         },
         onSubmit: values =>{
-            // alert(JSON.stringify(values, null,2));
             const accounts = data?.items;
 
             accounts?.map((account: any)=>{
@@ -43,7 +42,7 @@ export default function Forms(){
                         await fetch(`http://127.0.0.1:8090/api/collections/accounts/records/${accountId}`,{
                             method: "PATCH",
                             headers:{
-                                'Content-Type': 'application/json',
+                                "Content-Type": "application/json",
                             },
                             body: JSON.stringify(data),
                         });
