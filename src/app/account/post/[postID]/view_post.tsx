@@ -1,12 +1,26 @@
 "use client";
 import { useParams } from "next/navigation"
 import useSWR, {mutate} from "swr";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { getCookie } from "typescript-cookie";
 
 export default function view_post() {
+
+  const [userLogged, setUserLogged] = useState<string | null>(null);
+
+  useEffect(()=>{
+    const userCookie = getCookie("isLogged") || null;
+    setUserLogged(userCookie);
+  },[]);
 
   const fetcher = (url: string, options: RequestInit = {}) => fetch(url, options).then((res) => res.json());
 
   const post = useSWR("http://127.0.0.1:8090/api/collections/status_update/records", fetcher, { revalidateOnFocus: false })?.data;
+  const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
+
+  //get the accounts
+  const user = accounts?.items;
 
   //get the post
   const postData = post?.items;
@@ -24,6 +38,9 @@ export default function view_post() {
   const postCreated = foundPost?.created;
   const postLikes = foundPost?.likes;
   const postDislikes = foundPost?.dislikes;
+
+  //get the username of the post user
+  const accountOwner = user?.find((acc:any)=>acc?.id === postOwner)?.username;
 
   //time format
   const formatCreatedTime = (created: string) => {
@@ -97,9 +114,12 @@ export default function view_post() {
     };
   };
 
+  const loggedUser = accountOwner === userLogged ? "(You)" : "";
+
   return (
     <>
-      <h2>{formatCreatedTime(postCreated)}</h2>
+      <h2><Link href={loggedUser ? "/account":""}>{accountOwner}{loggedUser}</Link></h2>
+      <h2>Posted: {formatCreatedTime(postCreated)}</h2>
       <h2>{postTextMessage}</h2>
       <h2>Likes: {postLikes} Dislikes: {postDislikes}</h2>
       <button onClick={()=> handleLikes(postId)}>like</button>

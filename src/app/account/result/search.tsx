@@ -110,6 +110,7 @@ export default function search() {
                         const text_message = post?.text_message;
                         const userOfTextMessageId = post?.user;
                         const timeOfPost = post?.created;
+                        const postId =  post?.id;
 
                         const findTextMessage = text_message?.toLowerCase().startsWith(search?.toLowerCase());
 
@@ -122,9 +123,11 @@ export default function search() {
                             return(
                                 <li>
                                     <li>
-                                        <div><Link href={mainUserLogged ? "/account" : `/account/${usernameOfTextMessage}`}>{usernameOfTextMessage}{mainUserLogged}</Link></div>
-                                        <div>Posted: {formatCreatedTime(timeOfPost)}</div>
-                                        <div>{text_message}</div>
+                                        <Link href={`/account/${usernameOfTextMessage}/post/${postId}`}>
+                                            <div><Link href={mainUserLogged ? "/account" : `/account/${usernameOfTextMessage}`}>{usernameOfTextMessage}{mainUserLogged}</Link></div>
+                                            <div>Posted: {formatCreatedTime(timeOfPost)}</div>
+                                            <div>{text_message}</div>
+                                        </Link>
                                     </li>
                                 </li>
                             );
