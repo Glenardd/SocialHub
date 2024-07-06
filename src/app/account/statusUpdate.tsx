@@ -2,6 +2,7 @@
 import { useFormik } from "formik";
 import { useState } from "react";
 import useSWR, { mutate } from 'swr';
+import Link from "next/link";
 
 export default function statusUpdate({user, userInfo}:any) {
 
@@ -233,6 +234,10 @@ export default function statusUpdate({user, userInfo}:any) {
         }
     };
 
+    const handleComments = (userId:any) =>{
+        alert(userId);
+    }
+
     return (
        <>  
             <form onSubmit={statusForms.handleSubmit}>
@@ -249,7 +254,7 @@ export default function statusUpdate({user, userInfo}:any) {
                 {reversedOrderPost?.map((post: any) => {
                     if (post?.user === userId) {
 
-                        const userId = post?.id;
+                        const postId = post?.id;
 
                         return (
                             <>
@@ -272,16 +277,17 @@ export default function statusUpdate({user, userInfo}:any) {
                                     }
                                     {
                                         edit !== userId && (
-                                            <>  
-                                                <div>Posted {formatCreatedTime(post?.created)}</div>
-                                                <div>{post.text_message}</div>
+                                            <>
+                                                <Link href={`/account/post/${postId}`}>
+                                                    <div>Posted {formatCreatedTime(post?.created)}</div>
+                                                    <div>{post.text_message}</div>
+                                                </Link>
                                                 <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
-                                                <button onClick={()=>handleLikes(userId)}>like</button>
-                                                <button onClick={()=>handleDislikes(userId)}>dislike</button>
-                                                <button onClick={()=>{
-                                                    handlePostEdit(userId);
-                                                }}>Edit</button>
-                                                <button onClick={()=> handlePostDelete(userId)}>Delete</button>
+                                                <button onClick={()=>handleLikes(postId)}>like</button>
+                                                <button onClick={()=>handleDislikes(postId)}>dislike</button>
+                                                <button onClick={()=>{handlePostEdit(postId);}}>Edit</button>
+                                                <button onClick={()=>handleComments(postId)}>comment</button>
+                                                <button onClick={()=> handlePostDelete(postId)}>Delete</button>
                                             </>
                                         )
                                     }
