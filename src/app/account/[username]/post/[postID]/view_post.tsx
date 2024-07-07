@@ -28,10 +28,15 @@ export default function view_post() {
 
   const foundPost = postData?.find((post:any)=> post?.id === postId);
   const postTextMessage = foundPost?.text_message;
+  
   const postOwnerId = foundPost?.user;
   const postCreated = foundPost?.created;
-  const postLikes = foundPost?.likes;
-  const postDislikes = foundPost?.dislikes;
+  
+  const postLikes = foundPost?.user_likes?.length;
+  const postDislikes = foundPost?.user_dislikes?.length;
+
+  const usersWhoLike = foundPost?.user_likes;
+  const usersWhoDislike = foundPost?.user_dislikes;
 
   //the username of the post user
   const accountOwner = user?.find((acc:any)=> acc?.id === postOwnerId)?.username;
@@ -66,45 +71,138 @@ export default function view_post() {
     return createdTime;
   };
 
+  //the id of the logged user
+  const loggedUserId = user?.find((acc:any)=> acc?.username === userLogged)?.id ;
+
   //likes
   const handleLikes = async (postId:any) =>{
-    const likeData = {
-      ...postLikes,
-      "likes": postLikes+1,
+
+    const hasLiked = () =>{
+
+      //find if user is in the userWhoLike
+      const foundUser = usersWhoLike?.includes(loggedUserId);
+
+      //if user is in the user_likes remove it if clicked again
+      if(foundUser){
+        const removeLikeUser = usersWhoLike?.filter((userId:any)=> userId !== loggedUserId);
+        return removeLikeUser;
+
+      //add the logged user if still not inside the user_likes
+      }else{
+        const addLikeUser = [...usersWhoLike, loggedUserId];
+        return addLikeUser;
+      };
+
     };
 
-    const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-      method: "PATCH",
-      headers:{
-        "Content-Type": "application/json",
-      },
-      body:JSON.stringify(likeData),
-    });
+    const likeData = {
+      "user_likes": hasLiked(),
+    }
 
-    if(like.ok){
-      mutate("http://127.0.0.1:8090/api/collections/status_update/records");
+    try{
+      const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(likeData),
+      });
+
+      if(like.ok){
+        
+        const removeUser = usersWhoDislike?.filter((userId:any)=> userId !== loggedUserId);
+
+        const dislikeData = {
+          "user_dislikes": removeUser,
+        };
+
+        try{
+          const removeFromDislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dislikeData),
+          });
+
+          if(removeFromDislike.ok){
+            mutate("http://127.0.0.1:8090/api/collections/status_update/records");
+          }
+
+        }catch(error){
+          console.log(error);
+        };
+      };
+
+    }catch(error){
+      console.log(error);
     };
 
   };
 
   //dislikes
   const handleDislikes = async (postId:any) =>{
+
+    const hasDisliked = () =>{
+
+      //find if user is in the userWhoDislike
+      const foundUser = usersWhoDislike?.includes(loggedUserId);
+
+      //if user is in the user_dislikes remove it if clicked again
+      if(foundUser){
+        const removeLikeUser = usersWhoDislike?.filter((userId:any)=> userId !== loggedUserId);
+        return removeLikeUser;
+
+      //add the logged user if still not inside the user_dislikes
+      }else{
+        const addDislikeUser = [...usersWhoDislike, loggedUserId];
+        return addDislikeUser;
+      };
+
+    };
+
     const dislikeData = {
-      ...postDislikes,
-      "dislikes": postDislikes+1,
+      "user_dislikes": hasDisliked(),
+    }
+
+    try{
+      const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dislikeData),
+      });
+
+      if(like.ok){
+        const removeUser = usersWhoLike?.filter((userId:any)=> userId !== loggedUserId);
+
+        const likeData = {
+          "user_likes": removeUser,
+        };
+
+        try{
+          const removeFromLike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(likeData),
+          });
+
+          if(removeFromLike.ok){
+            mutate("http://127.0.0.1:8090/api/collections/status_update/records");
+          };
+
+        }catch(error){
+          console.log(error);
+        };
+      };
+
+    }catch(error){
+      console.log(error);
     };
 
-    const dislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-      method: "PATCH",
-      headers:{
-        "Content-Type": "application/json",
-      },
-      body:JSON.stringify(dislikeData),
-    });
-
-    if(dislike.ok){
-      mutate("http://127.0.0.1:8090/api/collections/status_update/records");
-    };
   };
 
   const loggedUser = accountOwner === userLogged ? "(You)" : "";

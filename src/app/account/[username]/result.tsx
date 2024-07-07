@@ -162,7 +162,7 @@ export default function result() {
         const userDislikes = foundPost?.user_dislikes;
 
         //checks if the current user already dislike the post
-        const hasDislike = () =>{
+        const hasDisliked = () =>{
             const checkUser = userDislikes?.includes(currentLoggedUserID);
 
             //if the user is inside the user_dislike remove it when clicked again
@@ -178,7 +178,7 @@ export default function result() {
         };
 
         const likeData = {
-            "user_dislikes": hasDislike(),  
+            "user_dislikes": hasDisliked(),  
         };
 
         try{
