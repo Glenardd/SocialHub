@@ -282,7 +282,7 @@ export default function statusUpdate({user, userInfo}:any) {
                                                     <div>Posted {formatCreatedTime(post?.created)}</div>
                                                     <div>{post.text_message}</div>
                                                 </Link>
-                                                <div>Likes: {post?.likes} Dislikes: {post?.dislikes}</div>
+                                                <div>Likes: {post?.user_likes?.length} Dislikes: {post?.user_dislikes?.length}</div>
                                                 <button onClick={()=>handleLikes(postId)}>like</button>
                                                 <button onClick={()=>handleDislikes(postId)}>dislike</button>
                                                 <button onClick={()=>{handlePostEdit(postId);}}>Edit</button>
