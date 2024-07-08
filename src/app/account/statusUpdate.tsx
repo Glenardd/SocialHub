@@ -4,9 +4,9 @@ import { useState } from "react";
 import useSWR, { mutate } from 'swr';
 import Link from "next/link";
 
-export default function statusUpdate({user, userInfo}:any) {
+export default function statusUpdate({userLogged, user}:any) {
 
-    const [edit, setEdit] = useState<boolean>(false);
+    const [edit, setEdit] = useState<any>(false);
 
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
 
@@ -18,7 +18,7 @@ export default function statusUpdate({user, userInfo}:any) {
     const reversedOrderPost = post?.map((post: any) => post)?.reverse();
     
     //find id of user
-    const userId = userInfo?.find((acc:any)=> acc.username === user)?.id;
+    const currentLoggedUserID = user?.find((acc:any)=> acc?.username === userLogged)?.id;
 
     const statusForms = useFormik({
         initialValues:{
@@ -27,7 +27,7 @@ export default function statusUpdate({user, userInfo}:any) {
         onSubmit: (values)=>{
             const data = {
                 "text_message": values.text_message,
-                "user": userId,
+                "user": currentLoggedUserID,
             }
 
             const postStatus = async () =>{
@@ -118,7 +118,7 @@ export default function statusUpdate({user, userInfo}:any) {
         }
     }
 
-    const handlePostEdit = async (id:any) =>{
+    const handlePostEdit = (id:any) =>{
         setEdit(id);
         const text_currentVal = post?.find((post:any)=>post?.id === id)?.text_message;
         editForm.setFieldValue("text_message", text_currentVal);
@@ -157,81 +157,131 @@ export default function statusUpdate({user, userInfo}:any) {
     };
 
     const handleLikes = async (postId: any) => {
-        const userPosts = post?.filter((post: any) => post.user === userId);
+        const foundPost = post?.find((post:any)=> post?.id === postId);
+        const usersWhoLike = foundPost?.user_likes;
+        const usersWhoDislike = foundPost?.user_dislikes;
 
-        const newPosts = userPosts?.map((post: any) => {
-            if (post.id === postId) {
-                return {
-                    ...post,
-                    likes: post.likes + 1
+        //checks if the current user already like the post
+        const hasLiked = () =>{ 
+            //checks if user is in user_likes
+            const checkUser = usersWhoLike?.includes(currentLoggedUserID);
+
+            //if the user is inside the user_likes remove it when clicked again
+            if(checkUser){
+                const removeLikeUser = usersWhoLike?.filter((userId:any)=> userId !== currentLoggedUserID);
+                
+                return removeLikeUser;
+            //add the logged user if still not inside the user_likes
+            }else{
+                const addLikeUser = [...usersWhoLike, currentLoggedUserID];
+                
+                return addLikeUser;
+            };
+        };
+
+        const likeData = {
+            "user_likes": hasLiked(),
+        };
+
+        try{
+            const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(likeData),
+            });
+
+            if(like.ok){
+                const removeUser = usersWhoDislike?.filter((userId:any)=> userId !== currentLoggedUserID);
+
+                const dislikeData = {
+                    "user_dislikes": removeUser,
                 };
-            }
-            return post;
-        });
 
-        const likes = {
-            "likes": newPosts.find((post: any) => post.id === postId)?.likes,
-        }
+                try{
+                    const removeFromDislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(dislikeData),
+                    });
 
-        try {
-            const response = await fetch(
-                `http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(likes),
-                }
-            );
-
-            if (response.ok) {
-                mutate(
-                    "http://127.0.0.1:8090/api/collections/status_update/records/"
-                );
-            }
-        } catch (error) {
-            console.error("Error updating likes:", error);
-        }
+                    if(removeFromDislike.ok){
+                        mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
+                    }
+                }catch(error){
+                    console.log(error);
+                };
+            };
+        }catch(error){
+            console.log(error);
+        };
     };
 
-    const handleDislikes = async (id:any) =>{
-        const userPosts = post?.filter((post: any) => post.user === userId);
+    const handleDislikes = async (postId:any) =>{
+        const foundPost = post?.find((post:any)=> post?.id === postId);
+        const usersWhoLike = foundPost?.user_likes;
+        const usersWhoDislike = foundPost?.user_dislikes;
 
-        const newPosts = userPosts?.map((post: any) => {
-            if (post.id === id) {
-                return {
-                    ...post,
-                    dislikes: post.dislikes + 1
+        //checks if the current user already like the post
+        const hasDisliked = () =>{ 
+            //checks if user is in user_likes
+            const checkUser = usersWhoDislike?.includes(currentLoggedUserID);
+
+            //if the user is inside the user_likes remove it when clicked again
+            if(checkUser){
+                const removeDislikeUser = usersWhoDislike?.filter((userId:any)=> userId !== currentLoggedUserID);
+                
+                return removeDislikeUser;
+            //add the logged user if still not inside the user_likes
+            }else{
+                const addLikeUser = [...usersWhoLike, currentLoggedUserID];
+                
+                return addLikeUser;
+            };
+        };
+
+        const likeData = {
+            "user_dislikes": hasDisliked(),
+        };
+
+        try{
+            const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(likeData),
+            });
+
+            if(like.ok){
+                const removeUser = usersWhoLike?.filter((userId:any)=> userId !== currentLoggedUserID);
+
+                const dislikeData = {
+                    "user_likes": removeUser,
                 };
-            }
-            return post;
-        });
 
-        const dislikes = {
-            "dislikes": newPosts.find((post: any) => post.id === id)?.dislikes,
-        }
+                try{
+                    const removeFromLike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(dislikeData),
+                    });
 
-        try {
-            const response = await fetch(
-                `http://127.0.0.1:8090/api/collections/status_update/records/${id}`,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(dislikes),
-                }
-            );
-
-            if (response.ok) {
-                mutate(
-                    "http://127.0.0.1:8090/api/collections/status_update/records/"
-                );
-            }
-        } catch (error) {
-            console.error("Error updating likes:", error);
-        }
+                    if(removeFromLike.ok){
+                        mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
+                    }
+                }catch(error){
+                    console.log(error);
+                };
+            };
+        }catch(error){
+            console.log(error);
+        };
     };
 
     const handleComments = (userId:any) =>{
@@ -252,15 +302,15 @@ export default function statusUpdate({user, userInfo}:any) {
             </form>
             <ul>
                 {reversedOrderPost?.map((post: any) => {
-                    if (post?.user === userId) {
-
+                    if (post?.user === currentLoggedUserID) {
+                        
                         const postId = post?.id;
 
                         return (
                             <>
-                                <li key={userId}>
+                                <li key={currentLoggedUserID}>
                                     {
-                                        edit === userId && (
+                                        edit === currentLoggedUserID && (
                                             <>
                                                 <form onSubmit={editForm.handleSubmit}>
                                                     <input
@@ -276,7 +326,7 @@ export default function statusUpdate({user, userInfo}:any) {
                                         ) 
                                     }
                                     {
-                                        edit !== userId && (
+                                        edit !== currentLoggedUserID && (
                                             <>
                                                 <Link href={`/account/post/${postId}`}>
                                                     <div>Posted {formatCreatedTime(post?.created)}</div>
