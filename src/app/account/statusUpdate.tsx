@@ -310,7 +310,7 @@ export default function statusUpdate({userLogged, user}:any) {
                             <>
                                 <li key={currentLoggedUserID}>
                                     {
-                                        edit === currentLoggedUserID && (
+                                        edit === postId && (
                                             <>
                                                 <form onSubmit={editForm.handleSubmit}>
                                                     <input
@@ -326,7 +326,7 @@ export default function statusUpdate({userLogged, user}:any) {
                                         ) 
                                     }
                                     {
-                                        edit !== currentLoggedUserID && (
+                                        edit !== postId && (
                                             <>
                                                 <Link href={`/account/post/${postId}`}>
                                                     <div>Posted {formatCreatedTime(post?.created)}</div>
