@@ -64,7 +64,6 @@ export default function postDisplay() {
         const foundPost = post?.find((post:any)=> post?.id === postId);
 
         const usersWhoLike = foundPost?.user_likes;
-        const usersWhoDislike = foundPost?.user_dislikes;
 
         const checkUser = usersWhoLike?.includes(loggedUserId);
 
@@ -95,96 +94,12 @@ export default function postDisplay() {
             });
 
             if(like.ok){
-                const removeUser = usersWhoDislike?.filter((userId:any)=> userId !== loggedUserId);
-
-                const dislikeData = {
-                    "user_dislikes": removeUser,
-                };
-
-                try{
-                    const removeFromDislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(dislikeData),
-                    });
-
-                    if(removeFromDislike.ok){
-                        mutate("http://127.0.0.1:8090/api/collections/status_update/records");
-                    }
-                }catch(error){
-                    console.log(error);
-                };
-            };
-
+                mutate("http://127.0.0.1:8090/api/collections/status_update/records");
+            }
         }catch(error){
             console.log(error);
         };
     };
-
-    const handleDislikes = async (postId:any) =>{
-        const foundPost = post?.find((post:any)=> post?.id === postId);
-
-        const usersWhoLike = foundPost?.user_likes;
-        const usersWhoDislike = foundPost?.user_dislikes;
-
-        const checkUser = usersWhoDislike?.includes(loggedUserId);
-
-        const hasDisliked = () =>{
-            //if the user is inside the user_dislike remove it when clicked again
-            if(checkUser){
-                const removeDislikeUser = usersWhoDislike?.filter((userId:any)=> userId !== loggedUserId);
-                
-                return removeDislikeUser;
-            //add the logged user if still not inside the user_dislikes
-            }else{
-                const addDislikeUser = [...usersWhoDislike, loggedUserId];
-                return addDislikeUser;
-            };
-        };
-
-        const dislikeData = {
-            "user_dislikes": hasDisliked(),
-        };
-
-        try{
-            const dislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(dislikeData),
-            });
-
-            if(dislike.ok){
-                const removeUser = usersWhoLike?.filter((userId:any)=> userId !== loggedUserId);
-
-                const likeData = {
-                    "user_likes": removeUser,
-                };
-
-                try{
-                    const removeFromLike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(likeData),
-                    });
-
-                    if(removeFromLike.ok){
-                        mutate("http://127.0.0.1:8090/api/collections/status_update/records");
-                    }
-                }catch(error){
-                    console.log(error);
-                };
-            };
-
-        }catch(error){
-            console.log(error);
-        };
-    }
 
     return (
         <>
@@ -204,9 +119,8 @@ export default function postDisplay() {
                                     <div>Posted: {formatCreatedTime(post?.created)}</div>
                                     <div>{post?.text_message}</div>
                                 </Link>
-                                <div>Likes: {post?.user_likes?.length} Dislikes: {post?.user_dislikes?.length}</div>
+                                <div>Likes: {post?.user_likes?.length}</div>
                                 <button onClick={()=>handleLikes(post?.id)}>Like</button>
-                                <button onClick={()=>handleDislikes(post?.id)}>Dislike</button>
                             </li>
                         )
                     })

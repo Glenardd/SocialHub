@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Search from "./search";
+import UserNotification from "./userNotification";
 import { getCookie, removeCookie } from "typescript-cookie";
 import { useRouter } from "next/navigation";
 import useSWR, {mutate} from "swr";
@@ -21,7 +22,11 @@ export default function UserNav() {
 
   const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
 
+  const post = useSWR("http://127.0.0.1:8090/api/collections/status_update/records", fetcher, { revalidateOnFocus: false })?.data;
+
   const user = accounts?.items;
+
+  const posts = post?.items;
 
   //data of the logged user
   const loggedUser = user?.find((acc:any)=> acc?.username === userLogged);
@@ -66,6 +71,7 @@ export default function UserNav() {
       <button onClick={handleDeleteAcc}>Delete account</button>
       <button onClick={handleLogout}>Logout</button>
       <Search />
+      <UserNotification posts={posts} loggedUserId={loggedUserId} user={user}/>
     </>
   );
 }
