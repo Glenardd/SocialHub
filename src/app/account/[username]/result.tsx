@@ -9,14 +9,16 @@ export default function result() {
     
     const username = useParams().username; 
 
-    const [like, setLike] = useState<{ [key: string]: boolean }>({});
-    const [dislike, setDislike] = useState<{ [key: string]: boolean }>({});
-
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
 
     const status_update = useSWR('http://127.0.0.1:8090/api/collections/status_update/records/', fetcher, {revalidateOnFocus: false}).data;
     
     const userAccount = useSWR('http://127.0.0.1:8090/api/collections/accounts/records/', fetcher, {revalidateOnFocus: false}).data;
+
+    const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
+    //comments data
+    const commentsData = comments?.items;
 
     //post data
     const post = status_update?.items;
@@ -49,6 +51,11 @@ export default function result() {
         const userLogged = getCookie("isLogged") || null;
         setLoggedUser(userLogged);
     },[])
+
+    const numComments = (postId:any) => {
+        const commentNum = commentsData?.filter((comments:any)=> comments?.post_assigned === postId).length;
+        return commentNum;
+    };
 
     //time format of post
     const formatCreatedTime = (created: string) => {
@@ -124,29 +131,7 @@ export default function result() {
             })
     
             if(like.ok){
-
-                //if response is ok then remove the user from the user_dislikes
-                const removeUser = userDislikes?.filter((userId:any)=> userId !== currentLoggedUserID);
-
-                const dislikeData = {
-                    "user_dislikes": removeUser,
-                };
-
-                try{
-                    const removeFromDislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(dislikeData),
-                    })
-    
-                    if(removeFromDislike.ok){
-                        mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
-                    };
-                }catch(error){
-                    console.log(error)
-                }
+                mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
             };
         }catch(error){
             console.log(error);
@@ -154,68 +139,7 @@ export default function result() {
         
     };
     
-    //dislikes
-    const handleDislikes = async (postId: any) =>{
-
-        const foundPost = post?.find((post:any)=> post?.id === postId);
-        const userLikes = foundPost?.user_likes;
-        const userDislikes = foundPost?.user_dislikes;
-
-        //checks if the current user already dislike the post
-        const hasDisliked = () =>{
-            const checkUser = userDislikes?.includes(currentLoggedUserID);
-
-            //if the user is inside the user_dislike remove it when clicked again
-            if(checkUser){
-                const removeDislikeUser = userDislikes?.filter((userId:any)=> userId !== currentLoggedUserID);
-                return removeDislikeUser;
-            //add the logged user if still not inside the user_dislikes
-            }else{
-                const addDislikeUser = [...userDislikes, currentLoggedUserID];
-                return addDislikeUser;
-            };
-            
-        };
-
-        const likeData = {
-            "user_dislikes": hasDisliked(),  
-        };
-
-        try{
-            const dislike = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(likeData),
-            });
     
-            if(dislike.ok){
-
-                const removeUser = userLikes?.filter((userId:any)=> userId !== currentLoggedUserID);
-
-                const likeData = {
-                    "user_likes": removeUser,
-                }
-
-                const removeFromLikes = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`,{
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(likeData),
-                });
-
-                if(removeFromLikes.ok){
-                    mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
-                };
-            };
-        }catch(error){
-            console.log(error);
-        }
-        
-    };
-
     const handleAddFriend = async (userId:any) =>{
 
         //appened the loggedin account
@@ -342,20 +266,19 @@ export default function result() {
             <h2><Link href={`/account/${username}/friends`}>friends: {userFriends?.length}</Link></h2>
             <ul>
                 {
-                    reversedOrderPost?.map((post:any)=>{
+                    reversedOrderPost?.map((post:any, index:number)=>{
                         if(post?.user === userId){
 
                             const postId = post?.id;
 
                             return (
-                                <li>
+                                <li key={index}>
                                     <Link href={`/account/${username}/post/${postId}`}>
                                         <div>{formatCreatedTime(post?.created)}</div>
                                         <div>{post?.text_message}</div>
                                     </Link>
-                                    <div>Likes: {post?.user_likes?.length} Dislikes: {post?.user_dislikes?.length}</div>
+                                    <div>Likes: {post?.user_likes?.length} comments: {numComments(postId)}</div>
                                     <button onClick={()=> handleLikes(postId)}>like</button>
-                                    <button onClick={()=> handleDislikes(postId)}>dislike</button>
                                 </li>
                             )
                         }

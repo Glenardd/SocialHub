@@ -16,7 +16,7 @@ export default function Accounts() {
 
     const fetcher = (url: string, options: RequestInit = {}) => fetch(url, options).then((res) => res.json());
 
-    const { data } = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false });
+    const { data } = useSWR("http://127.0.0.1:8090/api/collections/accounts/records/", fetcher, { revalidateOnFocus: false });
 
     const accounts = data?.items;
 

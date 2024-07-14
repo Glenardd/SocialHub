@@ -12,6 +12,8 @@ export default function postDisplay() {
 
     const userData = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
 
+    const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
     const allPost = postData?.items;
     const allUser = userData?.items;
 
@@ -119,7 +121,7 @@ export default function postDisplay() {
                                     <div>Posted: {formatCreatedTime(post?.created)}</div>
                                     <div>{post?.text_message}</div>
                                 </Link>
-                                <div>Likes: {post?.user_likes?.length}</div>
+                                <div>Likes: {post?.user_likes?.length} comments: {post?.comments?.length}</div>
                                 <button onClick={()=>handleLikes(post?.id)}>Like</button>
                             </li>
                         )

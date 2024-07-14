@@ -30,7 +30,7 @@ export default function userNotification({posts, loggedUserId, user}:any) {
             }
             createdTime = date.toLocaleString('default', options);
         }
-        
+
         return createdTime;
     };
 
@@ -39,18 +39,17 @@ export default function userNotification({posts, loggedUserId, user}:any) {
 
     // Collect all interactions (likes and dislikes) and sort them by time
     const interactions = postsOwner?.flatMap((post:any) => [
-        ...post.user_likes.map((userLike:any) => ({ user: user?.find((acc:any)=> acc?.id === userLike)?.username, type: "liked", created: formatCreatedTime(post?.updated), postId: post?.id })),
+        ...post.user_likes.map((userLike:any) => ({ user: user?.find((acc:any)=> acc?.id === userLike)?.username, type: "liked", created: formatCreatedTime(post?.updated), postId: post?.text_message })),
     ]).sort((a:any, b:any) => {
         if (a.created === 'Just now') return -1;
         if (b.created === 'Just now') return 1;
         return new Date(b.created).getTime() - new Date(a.created).getTime();
     });
 
-    mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
+    mutate("http://127.0.0.1:8090/api/collections/status_update/records");
 
     return (
         <>  
-            <div>notif</div>
             <ul>
                 {interactions?.map((interaction:any, index:any) => (
                     <li key={index}>

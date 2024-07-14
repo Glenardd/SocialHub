@@ -32,7 +32,7 @@ export default function statusUpdate({userLogged, user}:any) {
 
             const postStatus = async () =>{
                 try{
-                    const response = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records`, {
+                    const response = await fetch("http://127.0.0.1:8090/api/collections/status_update/records", {
                         method:'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ export default function statusUpdate({userLogged, user}:any) {
                     });
     
                     if(response.ok){
-                        mutate('http://127.0.0.1:8090/api/collections/status_update/records/');
+                        mutate('http://127.0.0.1:8090/api/collections/status_update/records');
                     }
                 }catch(error){
                     console.log(error);
@@ -81,7 +81,7 @@ export default function statusUpdate({userLogged, user}:any) {
                             });
                     
                             if (response.ok) {
-                                mutate('http://127.0.0.1:8090/api/collections/status_update/records/');
+                                mutate('http://127.0.0.1:8090/api/collections/status_update/records');
                             }
 
                             setEdit(false);
@@ -111,7 +111,7 @@ export default function statusUpdate({userLogged, user}:any) {
           });
 
           if (response.ok) {
-            mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
+            mutate("http://127.0.0.1:8090/api/collections/status_update/records");
           }
         } catch (error) {
           console.log(error);
@@ -192,7 +192,7 @@ export default function statusUpdate({userLogged, user}:any) {
             });
 
             if(like.ok){
-                mutate("http://127.0.0.1:8090/api/collections/status_update/records");    
+                mutate("http://127.0.0.1:8090/api/collections/status_update/records/");    
             };
         }catch(error){
             console.log(error);

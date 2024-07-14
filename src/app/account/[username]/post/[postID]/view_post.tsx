@@ -5,6 +5,7 @@ import useSWR, { mutate } from 'swr'
 import { useState, useEffect } from 'react';
 import { getCookie } from 'typescript-cookie';
 import Link from 'next/link';
+import { useFormik } from 'formik';
 
 export default function view_post() {
 
@@ -22,7 +23,10 @@ export default function view_post() {
   
   const post = useSWR("http://127.0.0.1:8090/api/collections/status_update/records", fetcher, { revalidateOnFocus: false })?.data;
   const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
+  const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
 
+  const commentsData = comments?.items;
+  
   const postData = post?.items;
   const user = accounts?.items;
 
@@ -38,6 +42,8 @@ export default function view_post() {
 
   //the username of the post user
   const accountOwner = user?.find((acc:any)=> acc?.id === postOwnerId)?.username;
+
+  const currentLoggedUserID = user?.find((acc:any)=> acc?.username === userLogged)?.id;
 
   //time format
   const formatCreatedTime = (created: string) => {
@@ -68,6 +74,9 @@ export default function view_post() {
 
     return createdTime;
   };
+
+  //found comments
+  const foundComment = commentsData?.filter((comments:any)=> comments?.post_assigned === postId);
 
   //the id of the logged user
   const loggedUserId = user?.find((acc:any)=> acc?.username === userLogged)?.id ;
@@ -116,6 +125,103 @@ export default function view_post() {
 
   };
 
+  const handleCommentsLike = async (commentId:any) =>{
+
+    const comments = commentsData?.find((comment:any)=>comment?.id === commentId);
+    const commentLikes = comments?.user_likes;
+
+    const checkUser = commentLikes?.includes(currentLoggedUserID);
+
+    const hasLiked = () =>{
+      if(checkUser){
+        const removeCommentLike = commentLikes?.filter((userlike:any)=> userlike !== currentLoggedUserID);
+        return removeCommentLike;
+      }else{
+        const addCommentLike = [...commentLikes, currentLoggedUserID];
+        return addCommentLike;
+      };
+    };
+
+    const commentLikeData = {
+      "user_likes": hasLiked(),
+    };
+
+    try{
+      const likeComment = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/${commentId}`,{
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(commentLikeData),
+      });
+
+      if(likeComment.ok){
+        mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+      };
+
+    }catch(error){
+      console.log(error);
+    };
+  };
+
+  const commentsForm = useFormik({
+    initialValues:{
+      comment: "",
+    },
+    onSubmit: values =>{
+      
+      if(values.comment === ""){
+
+      }else{
+
+        const commentData = {
+          "comment": values.comment,
+          "user": currentLoggedUserID,
+          "post_assigned": postId,
+        };
+
+        const commentSubmit = async () =>{
+          try{
+            const commentInput = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/`,{
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(commentData),
+            });
+
+            if(commentInput.ok){
+              mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+            }
+          }catch(error){
+            console.log(error);
+          }
+        }
+
+        commentSubmit();
+
+      };
+    }
+  });
+
+  const handleDeleteComment = async (commentId:any) =>{
+    try{
+      const deleteComment = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/${commentId}`,{
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if(deleteComment.ok){
+        mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+      };
+
+    }catch(error){
+      console.log(error);
+    };
+  };
+
   const loggedUser = accountOwner === userLogged ? "(You)" : "";
 
   return (
@@ -124,8 +230,40 @@ export default function view_post() {
       <h2>Posted: {formatCreatedTime(postCreated)}</h2>
       <h2>{postTextMessage}</h2>
       <h2>Likes: {postLikes}</h2>
-      <button onClick={()=> handleLikes(postId)}>liked</button>
+      <button onClick={()=> handleLikes(postId)}>like</button>
+      <form onSubmit={commentsForm.handleSubmit}>
+        <input 
+          type="comment" 
+          name="comment" 
+          placeholder="comment" 
+          onChange={commentsForm.handleChange}
+          value={commentsForm.values.comment}
+        />
+        <button type="submit">comment</button>
+      </form>
+      <ul>
+        {
+          foundComment?.map((comments:any, index:number)=>{
 
+            const usernameComment = user?.find((acc:any)=>acc?.id === comments?.user)?.username;
+            const commentLikes = comments?.user_likes?.length;
+            const commentText = comments?.comment;
+            const commentId = comments?.id;
+            const commentCreated = formatCreatedTime(comments?.created);
+
+            return(
+              <li key={index}>
+                <h2>{usernameComment}</h2>
+                <b>{commentCreated}</b>
+                <p>{commentText}</p>
+                <p>Likes: {commentLikes}</p>
+                <button onClick={()=>handleCommentsLike(commentId)}>like</button>
+                <button onClick={()=>handleDeleteComment(commentId)}>delete</button>
+              </li>
+            )
+          }).reverse()
+        }
+      </ul>
     </>
   )
 }

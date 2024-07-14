@@ -9,6 +9,7 @@ import useSWR, {mutate} from "swr";
 
 export default function UserNav() {
   const [userLogged, setUserLogged] = useState<string | null>(null);
+  const [seeNotif, setSeeNotif] = useState<boolean>(false);
 
   useEffect(() => {
     // Access cookies only on the client side
@@ -50,7 +51,7 @@ export default function UserNav() {
       });
 
       if(response.ok){
-        mutate("http://127.0.0.1:8090/api/collections/accounts/records/");
+        mutate("http://127.0.0.1:8090/api/collections/accounts/records");
       }
     }catch(error){
       console.log(error);
@@ -71,7 +72,8 @@ export default function UserNav() {
       <button onClick={handleDeleteAcc}>Delete account</button>
       <button onClick={handleLogout}>Logout</button>
       <Search />
-      <UserNotification posts={posts} loggedUserId={loggedUserId} user={user}/>
+      <button onClick={() => setSeeNotif(!seeNotif)}>Notif</button>
+      {seeNotif === true ? (<UserNotification posts={posts} loggedUserId={loggedUserId} user={user}/>): ""}
     </>
   );
 }
