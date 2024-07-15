@@ -11,11 +11,15 @@ export default function result() {
 
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
 
-    const status_update = useSWR('http://127.0.0.1:8090/api/collections/status_update/records/', fetcher, {revalidateOnFocus: false}).data;
+    const status_update = useSWR('http://127.0.0.1:8090/api/collections/status_update/records/', fetcher, {revalidateOnFocus: false})?.data;
     
-    const userAccount = useSWR('http://127.0.0.1:8090/api/collections/accounts/records/', fetcher, {revalidateOnFocus: false}).data;
+    const userAccount = useSWR('http://127.0.0.1:8090/api/collections/accounts/records/', fetcher, {revalidateOnFocus: false})?.data;
 
     const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
+    const notif = useSWR("http://127.0.0.1:8090/api/collections/user_notification/records", fetcher, { revalidateOnFocus: false })?.data;
+
+    const userNotif = notif?.items
 
     //comments data
     const commentsData = comments?.items;
@@ -93,52 +97,86 @@ export default function result() {
 
     //likes
     const handleLikes = async (postId: any) => {
-
-        const foundPost = post?.find((post:any)=> post?.id === postId);
+        const foundPost = post?.find((post: any) => post?.id === postId);
         const userLikes = foundPost?.user_likes;
-        const userDislikes = foundPost?.user_dislikes;
 
-        //checks if the current user already like the post
-        const hasLiked = () =>{
-            //checks if user is in user_likes
+        const removeNotif = async (notifId: any) => {
+            try {
+                const notification = await fetch(`http://127.0.0.1:8090/api/collections/user_notification/records/${notifId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                if (notification.ok) {
+                    mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+                };
+            } catch (error) {
+                console.log(error);
+            };
+        };
+
+        const hasLiked = () => {
             const checkUserLikes = userLikes?.includes(currentLoggedUserID);
-
-            //if the user is inside the user_likes remove it when clicked again
-            if(checkUserLikes){
-                const removeLikeUser = userLikes?.filter((userId:any)=> userId !== currentLoggedUserID);
-                
+            if (checkUserLikes) {
+                const removeLikeUser = userLikes?.filter((userId: any) => userId !== currentLoggedUserID);
                 return removeLikeUser;
-            //add the logged user if still not inside the user_likes
-            }else{
-
+            } else {
                 const addLikeUser = [...userLikes, currentLoggedUserID];
                 return addLikeUser;
-            };
-            
+            }
         };
 
         const likeData = {
-            "user_likes": hasLiked(),  
+            "user_likes": hasLiked(),
         };
 
-        try{
+        try {
             const like = await fetch(`http://127.0.0.1:8090/api/collections/status_update/records/${postId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(likeData),
-            })
-    
-            if(like.ok){
+            });
+
+            if (like.ok) {
                 mutate("http://127.0.0.1:8090/api/collections/status_update/records/");
-            };
-        }catch(error){
+                const notifId = userNotif?.find((notif: any) => notif?.post_reacted === postId && notif?.user_interacted === currentLoggedUserID)?.id;
+                const hasLikedPost = userLikes?.includes(currentLoggedUserID);
+
+                if (hasLikedPost && notifId) {
+                    await removeNotif(notifId);
+                } else if (!hasLikedPost) {
+                    const notificationData = {
+                        "user_account": userId,
+                        "user_interacted": currentLoggedUserID,
+                        "type": "liked",
+                        "post_reacted": postId,
+                    };
+
+                    try {
+                        const notification = await fetch("http://127.0.0.1:8090/api/collections/user_notification/records", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(notificationData),
+                        });
+
+                        if (notification.ok) {
+                            mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+                        }
+                    } catch (error) {
+                        console.log(error);
+                    }
+                }
+            }
+        } catch (error) {
             console.log(error);
-        };
-        
+        }
     };
-    
     
     const handleAddFriend = async (userId:any) =>{
 

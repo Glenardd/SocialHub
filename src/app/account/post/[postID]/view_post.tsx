@@ -4,6 +4,7 @@ import useSWR, {mutate} from "swr";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { getCookie } from "typescript-cookie";
+import { useFormik } from "formik";
 
 export default function view_post() {
 
@@ -18,6 +19,10 @@ export default function view_post() {
 
   const post = useSWR("http://127.0.0.1:8090/api/collections/status_update/records", fetcher, { revalidateOnFocus: false })?.data;
   const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
+  const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
+  //comments data
+  const commentsData = comments?.items;
 
   //get the accounts
   const user = accounts?.items;
@@ -116,6 +121,105 @@ export default function view_post() {
     };  
   };
 
+  const handleCommentsLike = async (commentId:any) =>{
+
+    const comments = commentsData?.find((comment:any)=>comment?.id === commentId);
+    const commentLikes = comments?.user_likes;
+
+    const checkUser = commentLikes?.includes(currentLoggedUserID);
+
+    const hasLiked = () =>{
+      if(checkUser){
+        const removeCommentLike = commentLikes?.filter((userlike:any)=> userlike !== currentLoggedUserID);
+        return removeCommentLike;
+      }else{
+        const addCommentLike = [...commentLikes, currentLoggedUserID];
+        return addCommentLike;
+      };
+    };
+
+    const commentLikeData = {
+      "user_likes": hasLiked(),
+    };
+
+    try{
+      const likeComment = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/${commentId}`,{
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(commentLikeData),
+      });
+
+      if(likeComment.ok){
+        mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+      };
+
+    }catch(error){
+      console.log(error);
+    };
+  };
+
+  const handleDeleteComment = async (commentId:any) =>{
+    try{
+      const deleteComment = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/${commentId}`,{
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if(deleteComment.ok){
+        mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+      };
+
+    }catch(error){
+      console.log(error);
+    };
+  };
+
+  const commentsForm = useFormik({
+    initialValues:{
+      comment: "",
+    },
+    onSubmit: values =>{
+      
+      if(values.comment === ""){
+
+      }else{
+
+        const commentData = {
+          "comment": values.comment,
+          "user": currentLoggedUserID,
+          "post_assigned": postId,
+        };
+
+        const commentSubmit = async () =>{
+          try{
+            const commentInput = await fetch(`http://127.0.0.1:8090/api/collections/status_comments/records/`,{
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(commentData),
+            });
+
+            if(commentInput.ok){
+              mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+            }
+          }catch(error){
+            console.log(error);
+          }
+        }
+
+        commentSubmit();
+
+      };
+    }
+  });
+
+  const foundComment = commentsData?.filter((comments:any)=> comments?.post_assigned === postId);
+
   const loggedUser = currentLoggedUserUsername === userLogged ? "(You)" : "";
 
   return (
@@ -125,6 +229,40 @@ export default function view_post() {
       <h2>{postTextMessage}</h2>
       <h2>Likes: {usersWhoLikeNum}</h2>
       <button onClick={()=> handleLikes(postId)}>like</button>
+      <form onSubmit={commentsForm.handleSubmit}>
+        <input 
+          type="comment" 
+          name="comment" 
+          placeholder="comment" 
+          onChange={commentsForm.handleChange}
+          value={commentsForm.values.comment}
+        />
+        <button type="submit">comment</button>
+      </form>
+      <ul>
+      {
+          foundComment?.map((comments:any, index:number)=>{
+
+            const usernameComment = user?.find((acc:any)=>acc?.id === comments?.user)?.username;
+            const commentLikes = comments?.user_likes?.length;
+            const commentText = comments?.comment;
+            const commentId = comments?.id;
+            const commentCreated = formatCreatedTime(comments?.created);
+
+            return(
+              <li key={index}>
+                <h2>{usernameComment}</h2>
+                <b>{commentCreated}</b>
+                <p>{commentText}</p>
+                <p>Likes: {commentLikes}</p>
+                <button onClick={()=>handleCommentsLike(commentId)}>like</button>
+                <button onClick={()=>handleDeleteComment(commentId)}>delete</button>
+              </li>
+            )
+          }).reverse()
+        }
+
+      </ul>
     </>
   )
 }

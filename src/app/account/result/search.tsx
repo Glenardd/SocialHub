@@ -123,7 +123,7 @@ export default function search() {
                             return(
                                 <li>
                                     <li>
-                                        <Link href={`/account/${usernameOfTextMessage}/post/${postId}`}>
+                                        <Link href={ mainUserLogged ? `/account/post/${postId}` :`/account/${usernameOfTextMessage}/post/${postId}`}>
                                             <div><Link href={mainUserLogged ? "/account" : `/account/${usernameOfTextMessage}`}>{usernameOfTextMessage}{mainUserLogged}</Link></div>
                                             <div>Posted: {formatCreatedTime(timeOfPost)}</div>
                                             <div>{text_message}</div>

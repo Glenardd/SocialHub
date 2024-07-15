@@ -11,9 +11,13 @@ export default function statusUpdate({userLogged, user}:any) {
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
 
     // fetch the post
-    const { data } = useSWR('http://127.0.0.1:8090/api/collections/status_update/records/', fetcher, {revalidateOnFocus: false});
+    const posts = useSWR('http://127.0.0.1:8090/api/collections/status_update/records/', fetcher, {revalidateOnFocus: false})?.data;
     
-    const post = data?.items;
+    const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
+    const commentsData = comments?.items;
+
+    const post = posts?.items;
 
     const reversedOrderPost = post?.map((post: any) => post)?.reverse();
     
@@ -199,9 +203,10 @@ export default function statusUpdate({userLogged, user}:any) {
         };
     };
 
-    const handleComments = (userId:any) =>{
-        alert(userId);
-    }
+    const numComments = (postId:any) => {
+        const commentNum = commentsData?.filter((comments:any)=> comments?.post_assigned === postId).length;
+        return commentNum;
+    };
 
     return (
        <>  
@@ -247,10 +252,9 @@ export default function statusUpdate({userLogged, user}:any) {
                                                     <div>Posted {formatCreatedTime(post?.created)}</div>
                                                     <div>{post.text_message}</div>
                                                 </Link>
-                                                <div>Likes: {post?.user_likes?.length}</div>
+                                                <div>Likes: {post?.user_likes?.length} Comments: {numComments(postId)}</div>
                                                 <button onClick={()=>handleLikes(postId)}>like</button>
                                                 <button onClick={()=>{handlePostEdit(postId);}}>Edit</button>
-                                                <button onClick={()=>handleComments(postId)}>comment</button>
                                                 <button onClick={()=> handlePostDelete(postId)}>Delete</button>
                                             </>
                                         )
