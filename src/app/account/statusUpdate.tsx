@@ -227,40 +227,38 @@ export default function statusUpdate({userLogged, user}:any) {
                         const postId = post?.id;
 
                         return (
-                            <>
-                                <li key={currentLoggedUserID}>
-                                    {
-                                        edit === postId && (
-                                            <>
-                                                <form onSubmit={editForm.handleSubmit}>
-                                                    <input
-                                                        placeholder={`${null}`}
-                                                        type="text_message" 
-                                                        name="text_message" 
-                                                        value={editForm.values.text_message} 
-                                                        onChange={editForm.handleChange}/>
-                                                    <button type="submit">post</button>
-                                                </form>
-                                                <button onClick={()=>setEdit(false)}>cancel</button>
-                                            </>
-                                        ) 
-                                    }
-                                    {
-                                        edit !== postId && (
-                                            <>
-                                                <Link href={`/account/post/${postId}`}>
-                                                    <div>Posted {formatCreatedTime(post?.created)}</div>
-                                                    <div>{post.text_message}</div>
-                                                </Link>
-                                                <div>Likes: {post?.user_likes?.length} Comments: {numComments(postId)}</div>
-                                                <button onClick={()=>handleLikes(postId)}>like</button>
-                                                <button onClick={()=>{handlePostEdit(postId);}}>Edit</button>
-                                                <button onClick={()=> handlePostDelete(postId)}>Delete</button>
-                                            </>
-                                        )
-                                    }
-                                </li>
-                            </>
+                            <li key={postId}>
+                                {
+                                    edit === postId && (
+                                        <>
+                                            <form onSubmit={editForm.handleSubmit}>
+                                                <input
+                                                    placeholder={`${null}`}
+                                                    type="text_message" 
+                                                    name="text_message" 
+                                                    value={editForm.values.text_message} 
+                                                    onChange={editForm.handleChange}/>
+                                                <button type="submit">post</button>
+                                            </form>
+                                            <button onClick={()=>setEdit(false)}>cancel</button>
+                                        </>
+                                    ) 
+                                }
+                                {
+                                    edit !== postId && (
+                                        <>
+                                            <Link href={`/account/post/${postId}`}>
+                                                <div>Posted {formatCreatedTime(post?.created)}</div>
+                                                <div>{post.text_message}</div>
+                                            </Link>
+                                            <div>Likes: {post?.user_likes?.length} Comments: {numComments(postId)}</div>
+                                            <button onClick={()=>handleLikes(postId)}>like</button>
+                                            <button onClick={()=>{handlePostEdit(postId);}}>Edit</button>
+                                            <button onClick={()=> handlePostDelete(postId)}>Delete</button>
+                                        </>
+                                    )
+                                }
+                            </li>
                         );
                     }
                 })}

@@ -25,6 +25,14 @@ export default function UserNav() {
 
   const notif = useSWR("http://127.0.0.1:8090/api/collections/user_notification/records", fetcher, { revalidateOnFocus: false })?.data;
 
+  const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+
+  const commentNotif = useSWR("http://127.0.0.1:8090/api/collections/user_comments_notification/records", fetcher, { revalidateOnFocus: false })?.data;
+
+  const commentNotifData = commentNotif?.items;
+  
+  const commentsData = comments?.items;
+
   const userNotif = notif?.items;
 
   const user = accounts?.items;
@@ -64,46 +72,63 @@ export default function UserNav() {
 
   };
 
+  //post notif data for likes
   //logged user
   const foundUserNotif = userNotif?.filter((notif:any)=> notif?.user_account === loggedUserId);
 
-  //post text message
-  const postsFound = posts?.map((post: any) => {
-    const matchedNotif = foundUserNotif?.find((notif: any) => notif?.post_reacted?.includes(post?.id));
-    if (matchedNotif) {
-      return {
-        post_logged_user: user?.find((acc:any)=> acc?.id === matchedNotif?.user_account)?.username,
-        post_user_liked: user?.find((acc:any)=> acc?.id === matchedNotif?.user_interacted)?.username,
-        post_message: post?.text_message,
-        post_type: matchedNotif?.type,
-        post_created:matchedNotif?.created,
-      };
-    }
-    return null;
-  }).filter((post: any) => post !== null);
+  //searches notifs here
+  const reactsFoundData = foundUserNotif?.filter((comments:any)=>{
+    return commentsData?.map((notif: any) => notif?.post_reacted?.includes(comments?.post_assigned));
+  })?.map((reacts: any) => {
+    return {
+      type: reacts?.type,
+      user_account: reacts?.user_account,
+      user_interacted: user?.find((acc:any)=> acc?.id === reacts?.user_interacted)?.username,
+      post_reacted: posts?.find((post:any)=> post?.id === reacts?.post_reacted)?.text_message,
+      post_reactedID: reacts?.post_reacted,
+      post_created: reacts?.created,
+    };
+  });
 
-  const handleDeleteAcc = async () => {
-  };
+  //post notif data for comments
+  const foundCommentNotif = commentNotifData?.filter((notif:any)=> notif?.owner_comment === loggedUserId);
+  //searches comment notifs here
+  const commentsFoundData = foundCommentNotif?.filter((comments:any)=>{
+    return commentsData?.map((notif: any) => notif?.post_reacted?.includes(comments?.post_assigned));
+  })?.map((comments: any) => {
+    return {
+      owner_comment: comments?.owner_comment,
+      user_commented: user?.find((acc:any)=> acc?.id === comments?.user_commented)?.username,
+      post_commented: posts?.find((post:any)=> post?.id === comments?.post_commented)?.text_message,
+      post_commentedID: comments?.post_commented, 
+      text_comment: comments?.text_comment,
+      post_created: comments?.created,
+    };
+  });
+
+  //combined notification from normal like reaction to comment notif, arrange according to date created
+  const combinedData = [...(reactsFoundData || []), ...(commentsFoundData || [])].sort((a: any, b: any) => a.post_created - b.post_created).reverse();
 
   return (
     <>
       <Link href="/home">home</Link>
       <Link href="/account">{userLogged}</Link>
-      <button onClick={handleDeleteAcc}>Delete account</button>
+      {/* <button onClick={handleDeleteAcc}>Delete account</button> */}
       <button onClick={handleLogout}>Logout</button>
       <Search />
       <ul>
       {
-        postsFound?.map((post:any)=> {
+        combinedData?.map((reacts:any, index:number)=> {
           return(
-            <li>
-              <p>{post?.post_user_liked} {post?.post_type} {post?.post_message}</p>
+            <li key={index}>
+              <Link href={`/account/${reacts?.owner_comment || reacts?.user_account}/post/${reacts.post_commentedID || reacts.post_reactedID}`}>
+                <p>{reacts.user_interacted || reacts?.user_commented} {reacts.type || `commented "${reacts.text_comment}" on`} "{reacts.post_reacted || reacts.post_commented}"</p>
+              </Link>
             </li>
           )
         })
       }
       </ul>
-      
     </>
   );
 }

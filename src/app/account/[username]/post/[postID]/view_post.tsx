@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { getCookie } from 'typescript-cookie';
 import Link from 'next/link';
 import { useFormik } from 'formik';
+import { comment } from 'postcss';
 
 export default function view_post() {
 
@@ -27,11 +28,11 @@ export default function view_post() {
   const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
   const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
   const notif = useSWR("http://127.0.0.1:8090/api/collections/user_notification/records", fetcher, { revalidateOnFocus: false })?.data;
+  const commentNotif = useSWR("http://127.0.0.1:8090/api/collections/user_comments_notification/records", fetcher, { revalidateOnFocus: false })?.data;
 
+  const commentNotifData = commentNotif?.items;
   const userNotif = notif?.items
-
   const commentsData = comments?.items;
-  
   const postData = post?.items;
   const user = accounts?.items;
 
@@ -141,6 +142,7 @@ export default function view_post() {
 
       if(like.ok){
         mutate("http://127.0.0.1:8090/api/collections/status_update/records");
+        //notif for liking the post
         const userId = user?.find((acc:any)=> acc?.username === username)?.id;
         const notifId = userNotif?.find((notif: any) => notif?.post_reacted === postId && notif?.user_interacted === currentLoggedUserID)?.id;
         const hasLikedPost = userLikes?.includes(currentLoggedUserID);
@@ -246,7 +248,34 @@ export default function view_post() {
 
             if(commentInput.ok){
               mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
-            }
+              //notif for commenting in the post
+              const userId = user?.find((acc:any)=> acc?.username === username)?.id;
+
+              const commentNotificationData= {
+                "text_comment": values.comment,
+                "user_commented": currentLoggedUserID,
+                "post_commented": postId,
+                "owner_comment": userId,
+              };
+    
+              try {
+                  const commentNotif = await fetch("http://127.0.0.1:8090/api/collections/user_comments_notification/records", {
+                      method: "POST",
+                      headers: {
+                          "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify(commentNotificationData),
+                  });
+    
+                  if (commentNotif.ok) {
+                      mutate("http://127.0.0.1:8090/api/collections/user_comments_notification/records");
+                  };
+              }catch (error) {
+                console.log(error);
+              };
+              
+              
+            };
           }catch(error){
             console.log(error);
           }
@@ -269,6 +298,28 @@ export default function view_post() {
 
       if(deleteComment.ok){
         mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
+        
+        //delete the notif of the comment if comment is deleted
+        const commentCheck = commentsData?.find((comment: any) => comment?.id === commentId)?.comment;
+  
+        // Check if the notification has the same text
+        const foundNotifId = commentNotifData?.find((notif: any) => notif?.text_comment === commentCheck)?.id;
+
+        try {
+          const commentNotifRemove = await fetch(`http://127.0.0.1:8090/api/collections/user_comments_notification/records/${foundNotifId}`, {
+              method: "DELETE",
+              headers: {
+                  "Content-Type": "application/json",
+              },
+          });
+
+          if (commentNotifRemove.ok) {
+              mutate("http://127.0.0.1:8090/api/collections/user_comments_notification/records");
+          };
+        }catch (error) {
+          console.log(error);
+        };
+
       };
 
     }catch(error){
