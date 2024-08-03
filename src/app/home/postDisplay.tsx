@@ -12,8 +12,6 @@ export default function postDisplay() {
 
     const userData = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
 
-    const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
-
     const allPost = postData?.items;
     const allUser = userData?.items;
 
@@ -59,8 +57,17 @@ export default function postDisplay() {
     
         return createdTime;
     };
-
-    const loggedUserId = user?.find((acc:any)=> acc?.username === userLogged)?.id;
+    
+    const loggedUser = user?.find((acc:any)=> acc?.username === userLogged);
+    //id of the current user logged in
+    const loggedUserId = loggedUser?.id;
+    //friends of the logged user
+    const loggedUserFriends = loggedUser?.friends;
+    //filter the logged user friends post 
+    const loggedUserFriendsPost = allPost?.filter((post: any) => {
+        const users = post?.user;
+        return loggedUserFriends?.some((friend: any) => users === friend);
+    });
 
     const handleLikes = async (postId:any) =>{
         const foundPost = post?.find((post:any)=> post?.id === postId);
@@ -68,7 +75,7 @@ export default function postDisplay() {
         const usersWhoLike = foundPost?.user_likes;
 
         const checkUser = usersWhoLike?.includes(loggedUserId);
-
+        
         const hasLiked = () =>{
             //if the user is inside the user_likes remove it when clicked again
             if(checkUser){
@@ -108,7 +115,7 @@ export default function postDisplay() {
             <h1>Post display</h1>
             <ul>
                 {
-                    post?.map((post:any)=>{
+                    loggedUserFriendsPost?.map((post:any)=>{
 
                         const accounts = user?.find((user:any)=> user?.id === post?.user)?.username;
 

@@ -280,11 +280,9 @@ export default function view_post() {
 
   const foundComment = commentsData?.filter((comments:any)=> comments?.post_assigned === postId);
 
-  const loggedUser = currentLoggedUserUsername === userLogged ? "(You)" : "";
-
   return (
     <>
-      <h2><Link href={loggedUser ? "/account":""}>{currentLoggedUserUsername}{loggedUser}</Link></h2>
+      <h2><Link href={currentLoggedUserUsername === userLogged ? "/account":""}>{currentLoggedUserUsername}{currentLoggedUserUsername === userLogged ? "(You)":""}</Link></h2>
       <h2>Posted: {formatCreatedTime(postCreated)}</h2>
       <h2>{postTextMessage}</h2>
       <h2>Likes: {usersWhoLikeNum}</h2>
@@ -303,6 +301,7 @@ export default function view_post() {
       {
           foundComment?.map((comments:any, index:number)=>{
 
+            //the owner of the comment
             const usernameComment = user?.find((acc:any)=>acc?.id === comments?.user)?.username;
             const commentLikes = comments?.user_likes?.length;
             const commentText = comments?.comment;
@@ -311,7 +310,7 @@ export default function view_post() {
 
             return(
               <li key={index}>
-                <h2>{usernameComment}</h2>
+                <h2><Link href={currentLoggedUserUsername === usernameComment ? "/account":`/account/${usernameComment}`}>{usernameComment}{currentLoggedUserUsername === usernameComment ? "(You)":"" }</Link></h2>
                 <b>{commentCreated}</b>
                 <p>{commentText}</p>
                 <p>Likes: {commentLikes}</p>
