@@ -181,6 +181,7 @@ export default function view_post() {
 
   };
 
+  //comments like react
   const handleCommentsLike = async (commentId:any) =>{
 
     const comments = commentsData?.find((comment:any)=>comment?.id === commentId);
@@ -213,8 +214,58 @@ export default function view_post() {
 
       if(likeComment.ok){
         mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
-      };
+        //the like notif will happen here
+        const notifId = userNotif?.find((notif: any) => notif?.comment_reacted === commentId && notif?.user_interacted === currentLoggedUserID)?.id;
+        const foundPost = commentsData?.find((comment: any) => comment?.id === commentId);
+        const userLikes = foundPost?.user_likes;
 
+        const hasLikedPost = userLikes?.includes(currentLoggedUserID);
+
+        const removeCommentNotif = async (notifId: any) => {
+          try {
+              const notification = await fetch(`http://127.0.0.1:8090/api/collections/user_notification/records/${notifId}`, {
+                  method: "DELETE",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+              });
+    
+              if (notification.ok) {
+                  mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+              };
+          } catch (error) {
+              console.log(error);
+          };
+        };
+
+        if(notifId && hasLikedPost){
+          await removeCommentNotif(notifId);
+        }else if(!hasLikedPost){
+          const commentNotifData = {
+            "user_account": postOwnerId,
+            "comment_reacted_post":postId,
+            "user_interacted":currentLoggedUserID,
+            "type": "liked",
+            "comment_reacted": commentId, 
+          };
+  
+          try{
+            const likeCommentNotif = await fetch("http://127.0.0.1:8090/api/collections/user_notification/records",{
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(commentNotifData),
+            });
+    
+            if(likeCommentNotif.ok){
+              mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+            };
+          }catch(error){
+            console.log(error);
+          };
+        };
+      };
     }catch(error){
       console.log(error);
     };

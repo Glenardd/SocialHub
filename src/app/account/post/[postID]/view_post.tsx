@@ -20,6 +20,9 @@ export default function view_post() {
   const post = useSWR("http://127.0.0.1:8090/api/collections/status_update/records", fetcher, { revalidateOnFocus: false })?.data;
   const accounts = useSWR("http://127.0.0.1:8090/api/collections/accounts/records", fetcher, { revalidateOnFocus: false })?.data;
   const comments = useSWR("http://127.0.0.1:8090/api/collections/status_comments/records", fetcher, { revalidateOnFocus: false })?.data;
+  const notif = useSWR("http://127.0.0.1:8090/api/collections/user_notification/records", fetcher, { revalidateOnFocus: false })?.data;
+
+  const userNotif = notif?.items
 
   //comments data
   const commentsData = comments?.items;
@@ -35,12 +38,14 @@ export default function view_post() {
   //post id params
   const postId = params.postID;
 
+  //logged user
+  const loggedUserId = user?.find((acc:any)=>acc?.username === userLogged)?.id
+
   //find that post id
   const foundPost = postData?.find((post:any)=> post?.id === postId);
 
   const postTextMessage = foundPost?.text_message;
-  
-  const currentLoggedUserID = foundPost?.user;
+
   const postCreated = foundPost?.created;
   
   const usersWhoLikeNum = foundPost?.user_likes?.length;
@@ -48,7 +53,7 @@ export default function view_post() {
   const usersWhoLike = foundPost?.user_likes;
 
   //get the username of the post user
-  const currentLoggedUserUsername = user?.find((acc:any)=>acc?.id === currentLoggedUserID)?.username;
+  const currentLoggedUserUsername = user?.find((acc:any)=>acc?.id === loggedUserId)?.username;
 
   //time format
   const formatCreatedTime = (created: string) => {
@@ -85,16 +90,16 @@ export default function view_post() {
     //checks if the current user already like the post
     const hasLiked = () =>{ 
         //checks if user is in user_likes
-        const checkUser = usersWhoLike?.includes(currentLoggedUserID);
+        const checkUser = usersWhoLike?.includes(loggedUserId);
 
         //if the user is inside the user_likes remove it when clicked again
         if(checkUser){
-            const removeLikeUser = usersWhoLike?.filter((userId:any)=> userId !== currentLoggedUserID);
+            const removeLikeUser = usersWhoLike?.filter((userId:any)=> userId !== loggedUserId);
             
             return removeLikeUser;
         //add the logged user if still not inside the user_likes
         }else{
-            const addLikeUser = [...usersWhoLike, currentLoggedUserID];
+            const addLikeUser = [...usersWhoLike, loggedUserId];
             
             return addLikeUser;
         };
@@ -126,14 +131,14 @@ export default function view_post() {
     const comments = commentsData?.find((comment:any)=>comment?.id === commentId);
     const commentLikes = comments?.user_likes;
 
-    const checkUser = commentLikes?.includes(currentLoggedUserID);
+    const checkUser = commentLikes?.includes(loggedUserId);
 
     const hasLiked = () =>{
       if(checkUser){
-        const removeCommentLike = commentLikes?.filter((userlike:any)=> userlike !== currentLoggedUserID);
+        const removeCommentLike = commentLikes?.filter((userlike:any)=> userlike !== loggedUserId);
         return removeCommentLike;
       }else{
-        const addCommentLike = [...commentLikes, currentLoggedUserID];
+        const addCommentLike = [...commentLikes, loggedUserId];
         return addCommentLike;
       };
     };
@@ -153,8 +158,63 @@ export default function view_post() {
 
       if(likeComment.ok){
         mutate("http://127.0.0.1:8090/api/collections/status_comments/records");
-      };
+        //if comment owner is different from the current logged in user
+        // the current logged in user can like the user post
+        const notifId = userNotif?.find((notif: any) => notif?.comment_reacted === commentId && notif?.user_interacted === loggedUserId)?.id;
+        const foundPost = commentsData?.find((comment: any) => comment?.id === commentId);
+        const userLikes = foundPost?.user_likes;
+        const foundPostOwner = foundPost?.user;
 
+        console.log(userLikes)
+        console.log(loggedUserId)
+
+        const hasLikedPost = userLikes?.includes(loggedUserId);
+
+        const removeCommentNotif = async (notifId: any) => {
+          try {
+              const notification = await fetch(`http://127.0.0.1:8090/api/collections/user_notification/records/${notifId}`, {
+                  method: "DELETE",
+                  headers: {
+                      "Content-Type": "application/json",
+                  },
+              });
+    
+              if (notification.ok) {
+                  mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+              };
+          } catch (error) {
+              console.log(error);
+          };
+        };
+
+        if(notifId && hasLikedPost && foundPostOwner !== loggedUserId){
+          await removeCommentNotif(notifId);
+        }else if(!hasLikedPost && foundPostOwner !== loggedUserId){
+          const commentNotifData = {
+            "user_account": foundPostOwner,
+            "comment_reacted_post":postId,
+            "user_interacted":loggedUserId,
+            "type": "liked",
+            "comment_reacted": commentId, 
+          };
+  
+          try{
+            const likeCommentNotif = await fetch("http://127.0.0.1:8090/api/collections/user_notification/records",{
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(commentNotifData),
+            });
+    
+            if(likeCommentNotif.ok){
+              mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
+            };
+          }catch(error){
+            console.log(error);
+          };
+        };
+      };
     }catch(error){
       console.log(error);
     };
@@ -190,7 +250,7 @@ export default function view_post() {
 
         const commentData = {
           "comment": values.comment,
-          "user": currentLoggedUserID,
+          "user": loggedUserId,
           "post_assigned": postId,
         };
 

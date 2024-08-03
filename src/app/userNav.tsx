@@ -85,6 +85,9 @@ export default function UserNav() {
       user_account: reacts?.user_account,
       user_interacted: user?.find((acc:any)=> acc?.id === reacts?.user_interacted)?.username,
       post_reacted: posts?.find((post:any)=> post?.id === reacts?.post_reacted)?.text_message,
+      comment_reacted: commentsData?.find((comment:any)=> comment?.id === reacts?.comment_reacted)?.comment,
+      comment_reacted_post: posts?.find((post:any)=> post?.id === reacts?.comment_reacted_post)?.text_message,
+      comment_reacted_postID: reacts?.comment_reacted_post,
       post_reactedID: reacts?.post_reacted,
       post_created: reacts?.created,
     };
@@ -121,8 +124,8 @@ export default function UserNav() {
         combinedData?.map((reacts:any, index:number)=> {
           return(
             <li key={index}>
-              <Link href={`/account/${reacts?.owner_comment || reacts?.user_account}/post/${reacts.post_commentedID || reacts.post_reactedID}`}>
-                <p>{reacts.user_interacted || reacts?.user_commented} {reacts.type || `commented "${reacts.text_comment}" on`} "{reacts.post_reacted || reacts.post_commented}"</p>
+              <Link href={`/account/post/${reacts.post_commentedID || reacts.post_reactedID || reacts?.comment_reacted_postID}`}>
+                <p>{reacts.user_interacted || reacts?.user_commented} {reacts.type || `commented "${reacts.text_comment}" on`} "{reacts.post_reacted || reacts.post_commented || `${reacts.comment_reacted} on ${reacts.comment_reacted_post}`}"</p>
               </Link>
             </li>
           )
