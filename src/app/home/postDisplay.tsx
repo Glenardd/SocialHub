@@ -68,6 +68,11 @@ export default function postDisplay() {
         const users = post?.user;
         return loggedUserFriends?.some((friend: any) => users === friend);
     });
+    //the post of the logged user
+    const loggedUserPost = allPost?.filter((post:any)=> post?.user.includes(loggedUserId));
+
+    //user and friends post are arrange and sorted according to time
+    const userAndFriendsPost = [...(loggedUserFriendsPost || []), ...(loggedUserPost || [])].sort((a: any, b: any) => a.post_created - b.post_created).reverse()
 
     const handleLikes = async (postId:any) =>{
         const foundPost = post?.find((post:any)=> post?.id === postId);
@@ -115,7 +120,7 @@ export default function postDisplay() {
             <h1>Post display</h1>
             <ul>
                 {
-                    loggedUserFriendsPost?.map((post:any)=>{
+                    userAndFriendsPost?.map((post:any)=>{
 
                         const accounts = user?.find((user:any)=> user?.id === post?.user)?.username;
 
