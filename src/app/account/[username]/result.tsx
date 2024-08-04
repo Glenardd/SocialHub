@@ -167,15 +167,15 @@ export default function result() {
 
                         if (notification.ok) {
                             mutate("http://127.0.0.1:8090/api/collections/user_notification/records");
-                        }
+                        };
                     } catch (error) {
                         console.log(error);
-                    }
-                }
-            }
+                    };
+                };
+            };
         } catch (error) {
             console.log(error);
-        }
+        };
     };
     
     const handleAddFriend = async (userId:any) =>{

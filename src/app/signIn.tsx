@@ -53,7 +53,7 @@ export default function Forms(){
 
                     updateUser();
 
-                    router.push('/account');
+                    router.push('/home');
 
                 }else{
                     const userUsername = accounts?.some((account: any) => account.username === values.username?true:false);
