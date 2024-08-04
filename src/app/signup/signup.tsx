@@ -79,6 +79,7 @@ export default function Signup(){
                     {/* username */}
                     <div className="mb-3">
                         <input
+                            className="form-control"
                             id="username"
                             name="username" 
                             type="text"
@@ -91,6 +92,7 @@ export default function Signup(){
                     {/* password */}
                     <div className="mb-3">
                         <input
+                            className="form-control"
                             id="password"
                             name="password" 
                             type="password"
@@ -103,9 +105,7 @@ export default function Signup(){
                     <div className="mb-3">
                         <button type="submit" className="btn btn-primary">Create account</button>
                     </div>
-                    <div className="mb-3">
-                        <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/'}>home</Link>
-                    </div>
+                    <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/'}>home</Link>
                 </form>
             </div>
         </div>

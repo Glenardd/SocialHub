@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import useSWR, { mutate } from "swr";
 import { setCookie } from "typescript-cookie";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Forms(){
 
@@ -74,29 +75,48 @@ export default function Forms(){
 
     return(
         <>
-            <h1>Sign in page</h1>
+            <div className="container min-vh-100 d-flex justify-content-center align-items-center">
+                <div className="mb-3">
+                    <div className="mb-3">
+                        <h1>Signin</h1>
+                    </div>
 
-            <form onSubmit={forms.handleSubmit}>
-                <label htmlFor="username">Username</label>
-                <input
-                    id="username"
-                    name="username" 
-                    type="text"
-                    onChange={forms.handleChange}
-                    value={forms.values.username} 
-                />
+                    <form onSubmit={forms.handleSubmit}>
+                        <div className="mb-3">
+                            <input
+                                className="form-control"
+                                id="username"
+                                name="username" 
+                                type="text"
+                                onChange={forms.handleChange}
+                                value={forms.values.username}
+                                placeholder="Username" 
+                            />
+                        </div>
 
-                <label htmlFor="password">Password</label>
-                <input
-                    id="password"
-                    name="password" 
-                    type="text"
-                    onChange={forms.handleChange}
-                    value={forms.values.password} 
-                />
-                <button type="submit">Sign in</button>
-                { !userUsername && (<h2>Username and password is wrong</h2>) || !userPassword && (<h2>Username and password is wrong</h2>)}
-            </form>
+                        <div className="mb-3">
+                            {/* password */}
+                            <input
+                                className="form-control"
+                                id="password"
+                                name="password" 
+                                type="password"
+                                onChange={forms.handleChange}
+                                value={forms.values.password}
+                                placeholder="Password"
+                            />
+                            { !userUsername && (<h2>Username and password is wrong</h2>) || !userPassword && (<h2>Username and password is wrong</h2>)}
+                        </div>
+
+                        <div className="mb-3">
+                            <button type="submit" className="btn btn-primary">Sign in</button>  
+                        </div>
+                        
+                        <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/signup'}>Signup </Link>
+                        <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/forgot-password'}>Forgot password</Link>
+                    </form>
+                </div>
+            </div>
         </>
     );
 }
