@@ -2,9 +2,11 @@
 import { useFormik } from "formik";
 import { object, string } from "yup";
 import useSWR, {mutate} from "swr";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Signup(){
+
+    const router = useRouter();
     
     const fetcher = (...args: [RequestInfo, RequestInit]) => fetch(...args).then((res) => res.json());
 
@@ -19,6 +21,7 @@ export default function Signup(){
     let userSchema = object({
         username: string().required("don't leave empty").test('username', 'Username already used!', (username)=> {
             const isUsernameTaken = userAccounts?.some((account: any) => account.username === username);
+            
             return !isUsernameTaken;
 
         }).required("don't leave empty").min(5, 'Please give 5 characters long').max(15, 'Username is too long, 15 characters only'),
@@ -54,6 +57,14 @@ export default function Signup(){
             }
 
             postUser();
+
+            const isUsernameTaken = userAccounts.some((acc:any) => acc.username === values.username);
+            if (isUsernameTaken) {
+                //show the warning from yup
+            } else {
+                //redirect if account is not in the database
+                router.push("/"); 
+            };
         },
     });
 
