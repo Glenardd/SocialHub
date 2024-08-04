@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import { object, string } from "yup";
 import useSWR, {mutate} from "swr";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Signup(){
 
@@ -69,30 +70,44 @@ export default function Signup(){
     });
 
     return(
-        <>
-            <h1>Sign up</h1>
-            <form onSubmit={forms.handleSubmit}>
-                <label htmlFor="username">Username</label>
-                <input
-                    id="username"
-                    name="username" 
-                    type="text"
-                    onChange={forms.handleChange}
-                    value={forms.values.username} 
-                />
-                {forms.touched.username && forms.errors.username ? (<div>{forms.errors.username}</div>):null}
-
-                <label htmlFor="password">Password</label>
-                <input
-                    id="password"
-                    name="password" 
-                    type="text"
-                    onChange={forms.handleChange}
-                    value={forms.values.password} 
-                />
-                {forms.touched.password && forms.errors.password ? (<div>{forms.errors.password}</div>):null}
-                <button type="submit">Create account</button>
-            </form>
-        </>
+        <div className="container min-vh-100 d-flex justify-content-center align-items-center">
+            <div className="mb-3">
+                <div className="mb-3">
+                    <h1>Signup</h1>
+                </div>
+                <form onSubmit={forms.handleSubmit}>
+                    {/* username */}
+                    <div className="mb-3">
+                        <input
+                            id="username"
+                            name="username" 
+                            type="text"
+                            onChange={forms.handleChange}
+                            value={forms.values.username} 
+                            placeholder="Username"
+                        />
+                        {forms.touched.username && forms.errors.username ? (<div>{forms.errors.username}</div>):null}
+                    </div>
+                    {/* password */}
+                    <div className="mb-3">
+                        <input
+                            id="password"
+                            name="password" 
+                            type="password"
+                            onChange={forms.handleChange}
+                            value={forms.values.password} 
+                            placeholder="Password"
+                        />
+                        {forms.touched.password && forms.errors.password ? (<div>{forms.errors.password}</div>):null}
+                    </div>
+                    <div className="mb-3">
+                        <button type="submit" className="btn btn-primary">Create account</button>
+                    </div>
+                    <div className="mb-3">
+                        <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/'}>home</Link>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }

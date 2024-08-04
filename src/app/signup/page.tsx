@@ -1,11 +1,9 @@
 import Signup from './signup';
-import Link from 'next/link';
 
 export default function page() {
   return (
-    <>
+    <div className="container">
         <Signup />
-        <Link href={'/'}>home</Link>
-    </>
+    </div>
   )
 }
