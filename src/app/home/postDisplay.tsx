@@ -72,10 +72,17 @@ export default function postDisplay() {
     //filter the logged user friends post 
     const loggedUserFriendsPost = allPost?.filter((post: any) => {
         const users = post?.user;
-        return loggedUserFriends?.some((friend: any) => users === friend);
+        return loggedUserFriends?.find((friend: any) => users === friend);
     });
     //the post of the logged user
     const loggedUserPost = allPost?.filter((post:any)=> post?.user.includes(currentLoggedUserID));
+
+    //users the current account not friends with
+    const userNotFriends = allUser?.filter((acc:any)=>{
+        const foundUserNotFriends = loggedUserFriends?.find((friend:any)=> friend !== acc?.id);        
+        const checkIfLoggedIn = acc?.id?.includes(currentLoggedUserID) ? "": foundUserNotFriends;
+        return checkIfLoggedIn; 
+    });
 
     //user and friends post are arrange and sorted according to time
     const userAndFriendsPost = [...(loggedUserFriendsPost || []), ...(loggedUserPost || [])].sort((a: any, b: any) => a.post_created - b.post_created).reverse()
@@ -168,6 +175,7 @@ export default function postDisplay() {
         };
     };
 
+    //counts the total of comments
     const numComments = (postId:any) => {
         const commentNum = commentsData?.filter((comments:any)=> comments?.post_assigned === postId).length;
         return commentNum;
@@ -197,6 +205,17 @@ export default function postDisplay() {
                         )
                     })
                 }
+            </ul>
+            <h1>People you may know</h1>
+            <ul>
+                {userNotFriends?.map((user:any)=>{
+                    const username = allUser?.find((acc:any)=>acc?.id === user?.id)?.username;
+                    return(
+                        <li key={user?.id}>
+                            <Link href={`/account/${username}`}>{username}</Link>
+                        </li>
+                    )
+                })}
             </ul>
         </>
     )
