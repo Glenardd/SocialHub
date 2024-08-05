@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { object, string } from "yup";
 import { useRouter } from "next/navigation";
 import ResetPassForm from "./resetPassForm";
+import Link from "next/link";
 
 export default function usernameForms({accounts}:any) {
 
@@ -43,29 +44,39 @@ export default function usernameForms({accounts}:any) {
     });
 
     return (
-      <>
-        {isUser ? (
-            <>
-                <ResetPassForm />
-            </>
-        ): (
-            <>
-                <h1>Password reset</h1>
-                <form onSubmit={formsUsername.handleSubmit}>
-                        <label htmlFor="username">Type your username</label>
-                        <input
-                            id="username"
-                            name="username"
-                            value={formsUsername.values.username} 
-                            onChange={formsUsername.handleChange} 
-                            type="text" 
-                        />
-                    <button  type="submit">reset</button>
-                </form>
-                {formsUsername.touched.username && formsUsername.errors.username ? (<div>{formsUsername.errors.username}</div>):null}  
-            </>
-        )}
-      </>
+      <div className="container min-vh-100 d-flex justify-content-center align-items-center">
+        <div className="mb-3">
+            {isUser ? (
+                <>
+                    <ResetPassForm />
+                </>
+            ): (
+                <div className="mb-3">
+                    <div className="mb-3">
+                        <h1>Password reset</h1>
+                    </div>
+                    <form onSubmit={formsUsername.handleSubmit}>
+                        <div className="mb-3">
+                            <input
+                                className="form-control"
+                                id="username"
+                                name="username"
+                                value={formsUsername.values.username} 
+                                onChange={formsUsername.handleChange} 
+                                type="text"
+                                placeholder="Type username" 
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <button type="submit" className="btn btn-primary">reset</button>
+                        </div>
+                    </form>
+                    {formsUsername.touched.username && formsUsername.errors.username ? (<div>{formsUsername.errors.username}</div>):null}  
+                </div>
+            )}
+            <Link className="link-offset-2 link-underline link-underline-opacity-0" href={'/'}>home</Link>
+        </div>
+      </div>
     )
   }
   

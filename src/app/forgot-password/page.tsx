@@ -5,7 +5,6 @@ export default function page() {
   return (
     <>
       <Forms />
-      <Link href={'/'}>home</Link>
     </>
   )
 }
