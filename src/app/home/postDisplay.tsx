@@ -182,41 +182,43 @@ export default function postDisplay() {
     };
 
     return (
-        <>
-            <h1>Post display</h1>
-            <ul>
-                {
-                    userAndFriendsPost?.map((post:any)=>{
+        <div className="container d-flex justify-content-center">
+            <div className="mb-3">
+                <h1>Post display</h1>
+                <ul>
+                    {
+                        userAndFriendsPost?.map((post:any)=>{
 
-                        const accounts = user?.find((user:any)=> user?.id === post?.user)?.username;
+                            const accounts = user?.find((user:any)=> user?.id === post?.user)?.username;
 
-                        const postId = post?.id; 
+                            const postId = post?.id; 
 
-                        return (
-                            <li key={post?.id}>
-                                <div><Link href={accounts === userLogged ? "/account" :`/account/${accounts}`}>{accounts}</Link></div>
-                                <Link href={`/account/${accounts}/post/${postId}`}>
-                                    <div>Posted: {formatCreatedTime(post?.created)}</div>
-                                    <div>{post?.text_message}</div>
-                                </Link>
-                                <div>Likes: {post?.user_likes?.length} comments: {numComments(post?.id)}</div>
-                                <button onClick={()=>handleLikes(post?.id)}>Like</button>
+                            return (
+                                <li key={post?.id}>
+                                    <div><Link href={accounts === userLogged ? "/account" :`/account/${accounts}`}>{accounts}</Link></div>
+                                    <Link href={`/account/${accounts}/post/${postId}`}>
+                                        <div>Posted: {formatCreatedTime(post?.created)}</div>
+                                        <div>{post?.text_message}</div>
+                                    </Link>
+                                    <div>Likes: {post?.user_likes?.length} comments: {numComments(post?.id)}</div>
+                                    <button onClick={()=>handleLikes(post?.id)}>Like</button>
+                                </li>
+                            )
+                        })
+                    }
+                </ul>
+                <h1>People you may know</h1>
+                <ul>
+                    {userNotFriends?.map((user:any)=>{
+                        const username = allUser?.find((acc:any)=>acc?.id === user?.id)?.username;
+                        return(
+                            <li key={user?.id}>
+                                <Link href={`/account/${username}`}>{username}</Link>
                             </li>
                         )
-                    })
-                }
-            </ul>
-            <h1>People you may know</h1>
-            <ul>
-                {userNotFriends?.map((user:any)=>{
-                    const username = allUser?.find((acc:any)=>acc?.id === user?.id)?.username;
-                    return(
-                        <li key={user?.id}>
-                            <Link href={`/account/${username}`}>{username}</Link>
-                        </li>
-                    )
-                })}
-            </ul>
-        </>
+                    })}
+                </ul>
+            </div>
+        </div>
     )
 }

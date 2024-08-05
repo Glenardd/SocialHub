@@ -113,25 +113,58 @@ export default function UserNav() {
   const combinedData = [...(reactsFoundData || []), ...(commentsFoundData || [])].sort((a: any, b: any) => a.post_created - b.post_created).reverse();
 
   return (
-    <>
-      <Link href="/home">home</Link>
-      <Link href="/account">{userLogged}</Link>
-      {/* <button onClick={handleDeleteAcc}>Delete account</button> */}
-      <button onClick={handleLogout}>Logout</button>
-      <Search />
-      <ul>
-      {
-        combinedData?.map((reacts:any, index:number)=> {
-          return(
-            <li key={index}>
-              <Link href={`/account/post/${reacts.post_commentedID || reacts.post_reactedID || reacts?.comment_reacted_postID}`}>
-                <p>{reacts.user_interacted || reacts?.user_commented} {reacts.type || `commented "${reacts.text_comment}" on`} "{reacts.post_reacted || reacts.post_commented || `${reacts.comment_reacted} on ${reacts.comment_reacted_post}`}"</p>
-              </Link>
-            </li>
-          )
-        })
-      }
-      </ul>
-    </>
+    <nav className="navbar navbar-expand-lg bg-body-tertiary">
+      <div className="container">
+        {/* home link */}
+        <div className="d-flex">
+          <Link className="navbar-brand" href="/home">Home</Link>
+          {/* search bar */}
+          <Search />
+        </div>
+
+        {/* profile link and notification */}
+        <ul className="navbar-nav me-2 mb-2 mb-lg-0"> 
+          
+          <li className="nav-item">
+            <ul className="nav-item dropdown">
+              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Notification
+              </a>
+              <ul className="dropdown-menu">
+                {
+                combinedData?.map((reacts:any, index:number)=> {
+                  return(
+                    <li className="dropdown-item" key={index}>
+                      <Link className="nav-link" href={`/account/post/${reacts.post_commentedID || reacts.post_reactedID || reacts?.comment_reacted_postID}`}>
+                        <p>{reacts.user_interacted || reacts?.user_commented} {reacts.type || `commented "${reacts.text_comment}" on`} "{reacts.post_reacted || reacts.post_commented || `${reacts.comment_reacted} on ${reacts.comment_reacted_post}`}"</p>
+                      </Link>
+                    </li>
+                  )
+                })
+              }
+              </ul>
+            </ul>
+          </li>
+
+          <li className="nav-item">
+            <ul className="nav-item dropdown ">
+              <a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {userLogged}
+              </a>
+              <ul className="dropdown-menu">
+                <li className="dropdown-item">
+                  <Link className="nav-link" href="/account">{userLogged}</Link>
+                </li>
+                <li className="dropdown-item">
+                  {/* <button onClick={handleDeleteAcc}>Delete account</button> */}
+                  <button className="btn btn-primary" onClick={handleLogout}>Logout</button>
+                </li>
+              </ul>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </nav>
   );
 }

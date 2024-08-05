@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import BootstrapClient from "./bootstrapClient";
 
 export const metadata = {
   title: 'SocialHub',
@@ -12,7 +13,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body data-bs-theme="dark">{children}</body>
+      <body data-bs-theme="dark">
+        {children}
+        <BootstrapClient />
+      </body>
     </html>
   )
 }

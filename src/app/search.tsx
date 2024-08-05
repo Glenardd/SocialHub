@@ -22,6 +22,7 @@ export default function search() {
     return (
         <>
             <form onSubmit={searchForms.handleSubmit}>
+                <div>
                 <input 
                     type="search"
                     name="search"
@@ -29,7 +30,8 @@ export default function search() {
                     value={searchForms.values.search}
                     onChange={searchForms.handleChange} 
                 />
-                <button type='submit'>search</button>
+                <button type='submit' className="btn btn-primary mx-2">search</button>
+                </div>
             </form>
         </>
     )
